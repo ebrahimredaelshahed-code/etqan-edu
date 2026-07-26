@@ -80,10 +80,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "منصة إتقان | Etqan Academy" },
-      { name: "description", content: "منصة تعليم إلكتروني احترافية بالعربية والإنجليزية." },
+      { title: "منصة إتقان — تعلم إلكتروني احترافي | Etqan Academy" },
+      { name: "description", content: "منصة إتقان للتعليم الإلكتروني: دورات احترافية في البرمجة والتصميم وإدارة الأعمال واللغات مع متابعة التقدم وشهادات إتمام." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:title", content: "منصة إتقان — تعلم إلكتروني احترافي | Etqan Academy" },
+      { name: "twitter:title", content: "منصة إتقان — تعلم إلكتروني احترافي | Etqan Academy" },
+      { property: "og:description", content: "منصة إتقان للتعليم الإلكتروني: دورات احترافية في البرمجة والتصميم وإدارة الأعمال واللغات مع متابعة التقدم وشهادات إتمام." },
+      { name: "twitter:description", content: "منصة إتقان للتعليم الإلكتروني: دورات احترافية في البرمجة والتصميم وإدارة الأعمال واللغات مع متابعة التقدم وشهادات إتمام." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/ae3d00fc-e81c-4cc3-988a-fafd8a54e6c4/id-preview-d2707054--be17a387-0a8b-4caf-9665-1a8a6d7be623.lovable.app-1785070444074.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/ae3d00fc-e81c-4cc3-988a-fafd8a54e6c4/id-preview-d2707054--be17a387-0a8b-4caf-9665-1a8a6d7be623.lovable.app-1785070444074.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
