@@ -1,0 +1,217 @@
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+
+export type Lang = "ar" | "en";
+
+const dict = {
+  ar: {
+    brand: "منصة إتقان",
+    tagline: "تعلّم بذكاء، وتقدّم بثقة",
+    login: "تسجيل الدخول",
+    signup: "إنشاء حساب",
+    logout: "تسجيل الخروج",
+    account: "حسابي",
+    profile: "الملف الشخصي",
+    myCourses: "الدورات المشترك بها",
+    browseCategories: "تصفح الأقسام",
+    heroTitle: "منصة تعليمية احترافية تصنع مستقبلك المهني",
+    heroSubtitle:
+      "دورات عملية بإشراف نخبة من المدربين، مع متابعة تقدمك درسًا بدرس وشهادات إتمام معتمدة.",
+    aboutTitle: "عن المنصة",
+    aboutText:
+      "منصة إتقان منصة تعليم إلكتروني متكاملة توفر محتوى عربيًا وإنجليزيًا عالي الجودة، مع نظام اشتراك آمن بأكواد مخصصة لكل متدرب ودورة.",
+    stat1: "متدرب نشط",
+    stat2: "دورة تدريبية",
+    stat3: "ساعة محتوى",
+    stat4: "نسبة الرضا",
+    categories: "الأقسام",
+    categoriesSubtitle: "اختر مجالك وابدأ رحلتك التعليمية",
+    courses: "الدورات",
+    coursesIn: "دورات قسم",
+    duration: "المدة",
+    lessons: "المحاضرات",
+    lesson: "درس",
+    hours: "ساعة",
+    price: "السعر",
+    currency: "ج.م",
+    enroll: "التسجيل والاشتراك",
+    enterCourse: "الدخول للدورة",
+    subscriptionCode: "كود الاشتراك",
+    codePlaceholder: "أدخل كود الاشتراك",
+    getCode: "استلام كود الاشتراك",
+    enterCourseBtn: "الدخول للدورة",
+    codeInvalid: "كود غير صحيح",
+    codeUsed: "هذا الكود مستخدم بالفعل من متدرب آخر",
+    codeWrongCourse: "هذا الكود لا يخص هذه الدورة",
+    codeSuccess: "تم تفعيل الاشتراك بنجاح",
+    mustLogin: "يجب تسجيل الدخول أولاً",
+    aboutCourse: "نبذة عن الدورة",
+    lessonsList: "الدروس",
+    progress: "نسبة الإنجاز",
+    completed: "مكتمل",
+    markComplete: "تحديد كمكتمل",
+    markIncomplete: "إلغاء الإكمال",
+    instructor: "المدرب",
+    fullName: "الاسم بالكامل",
+    phone: "رقم الهاتف",
+    guardianPhone: "رقم ولي الأمر",
+    password: "كلمة المرور",
+    phoneNote: "ملاحظة: رقم الهاتف سيكون اسم المستخدم عند تسجيل الدخول",
+    rememberMe: "تذكرني دائماً",
+    haveAccount: "لديك حساب بالفعل؟",
+    noAccount: "ليس لديك حساب؟",
+    welcomeBack: "مرحباً بعودتك",
+    createAccount: "أنشئ حسابك الآن",
+    submit: "متابعة",
+    footerRights: "جميع الحقوق محفوظة",
+    quickLinks: "روابط سريعة",
+    contact: "تواصل معنا",
+    home: "الرئيسية",
+    adminPanel: "لوحة الإدارة",
+    adminLogin: "دخول الإدارة",
+    generateCodes: "توليد الأكواد",
+    count: "عدد الأكواد",
+    generate: "توليد",
+    code: "الكود",
+    course: "الدورة",
+    status: "الحالة",
+    used: "مستخدم",
+    available: "متاح",
+    usedBy: "بواسطة",
+    notAdmin: "هذا الحساب لا يملك صلاحيات الإدارة",
+    noCourses: "لم تشترك في أي دورة بعد",
+    loading: "جاري التحميل...",
+    getCodeHint: "للحصول على كود الاشتراك تواصل معنا على واتساب 01000000000",
+    lang: "English",
+  },
+  en: {
+    brand: "Etqan Academy",
+    tagline: "Learn smart, advance with confidence",
+    login: "Log in",
+    signup: "Sign up",
+    logout: "Log out",
+    account: "My account",
+    profile: "Profile",
+    myCourses: "My courses",
+    browseCategories: "Browse categories",
+    heroTitle: "A professional learning platform that builds your career",
+    heroSubtitle:
+      "Practical courses led by expert instructors, with lesson-by-lesson progress tracking and completion certificates.",
+    aboutTitle: "About the platform",
+    aboutText:
+      "Etqan Academy is a complete e-learning platform offering high quality Arabic and English content, with a secure subscription system using codes tied to a single trainee and course.",
+    stat1: "Active trainees",
+    stat2: "Courses",
+    stat3: "Content hours",
+    stat4: "Satisfaction",
+    categories: "Categories",
+    categoriesSubtitle: "Pick your field and start your learning journey",
+    courses: "Courses",
+    coursesIn: "Courses in",
+    duration: "Duration",
+    lessons: "Lessons",
+    lesson: "lesson",
+    hours: "h",
+    price: "Price",
+    currency: "EGP",
+    enroll: "Enroll & subscribe",
+    enterCourse: "Enter course",
+    subscriptionCode: "Subscription code",
+    codePlaceholder: "Enter your subscription code",
+    getCode: "Get a subscription code",
+    enterCourseBtn: "Enter course",
+    codeInvalid: "Invalid code",
+    codeUsed: "This code has already been used by another trainee",
+    codeWrongCourse: "This code does not belong to this course",
+    codeSuccess: "Subscription activated successfully",
+    mustLogin: "Please log in first",
+    aboutCourse: "About this course",
+    lessonsList: "Lessons",
+    progress: "Progress",
+    completed: "Completed",
+    markComplete: "Mark as complete",
+    markIncomplete: "Mark as incomplete",
+    instructor: "Instructor",
+    fullName: "Full name",
+    phone: "Phone number",
+    guardianPhone: "Guardian phone",
+    password: "Password",
+    phoneNote: "Note: your phone number will be your username when logging in",
+    rememberMe: "Keep me signed in",
+    haveAccount: "Already have an account?",
+    noAccount: "Don't have an account?",
+    welcomeBack: "Welcome back",
+    createAccount: "Create your account",
+    submit: "Continue",
+    footerRights: "All rights reserved",
+    quickLinks: "Quick links",
+    contact: "Contact us",
+    home: "Home",
+    adminPanel: "Admin panel",
+    adminLogin: "Admin login",
+    generateCodes: "Generate codes",
+    count: "Number of codes",
+    generate: "Generate",
+    code: "Code",
+    course: "Course",
+    status: "Status",
+    used: "Used",
+    available: "Available",
+    usedBy: "By",
+    notAdmin: "This account has no admin privileges",
+    noCourses: "You have not subscribed to any course yet",
+    loading: "Loading...",
+    getCodeHint: "To get a subscription code contact us on WhatsApp 01000000000",
+    lang: "العربية",
+  },
+} as const;
+
+export type TranslationKey = keyof typeof dict.ar;
+
+type I18nValue = {
+  lang: Lang;
+  dir: "rtl" | "ltr";
+  t: (key: TranslationKey) => string;
+  setLang: (lang: Lang) => void;
+  toggle: () => void;
+};
+
+const I18nContext = createContext<I18nValue | null>(null);
+
+export function I18nProvider({ children }: { children: ReactNode }) {
+  const [lang, setLangState] = useState<Lang>("ar");
+
+  useEffect(() => {
+    const stored = typeof window !== "undefined" ? window.localStorage.getItem("lang") : null;
+    if (stored === "ar" || stored === "en") setLangState(stored);
+  }, []);
+
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    document.documentElement.lang = lang;
+    document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+  }, [lang]);
+
+  const setLang = useCallback((next: Lang) => {
+    setLangState(next);
+    if (typeof window !== "undefined") window.localStorage.setItem("lang", next);
+  }, []);
+
+  const value = useMemo<I18nValue>(
+    () => ({
+      lang,
+      dir: lang === "ar" ? "rtl" : "ltr",
+      t: (key: TranslationKey) => dict[lang][key],
+      setLang,
+      toggle: () => setLang(lang === "ar" ? "en" : "ar"),
+    }),
+    [lang, setLang],
+  );
+
+  return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
+}
+
+export function useI18n() {
+  const ctx = useContext(I18nContext);
+  if (!ctx) throw new Error("useI18n must be used inside I18nProvider");
+  return ctx;
+}
