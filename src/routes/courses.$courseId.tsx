@@ -6,6 +6,7 @@ import { SiteLayout } from "@/components/site/SiteLayout";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
+import { resolveLessonVideoUrl } from "@/lib/lesson-video";
 
 export const Route = createFileRoute("/courses/$courseId")({
   head: () => ({
@@ -170,5 +171,40 @@ function CoursePlayer() {
         </section>
       </div>
     </SiteLayout>
+  );
+}
+
+function LessonPlayer({
+  lesson,
+  lang,
+}: {
+  lesson: { id: string; title_ar: string; title_en: string; video_url: string };
+  lang: "ar" | "en";
+}) {
+  const { t } = useI18n();
+  const { data: src, isLoading } = useQuery({
+    queryKey: ["lesson-video", lesson.id, lesson.video_url],
+    queryFn: () => resolveLessonVideoUrl(lesson.video_url),
+  });
+
+  return (
+    <section className="overflow-hidden rounded-3xl border border-border bg-ink p-3 shadow-lift">
+      {src ? (
+        <video
+          key={src}
+          src={src}
+          controls
+          controlsList="nodownload"
+          className="aspect-video w-full rounded-2xl bg-black"
+        />
+      ) : (
+        <div className="flex aspect-video w-full items-center justify-center rounded-2xl bg-black text-sm text-ink-foreground/70">
+          {isLoading ? t("loading") : t("videoMissing")}
+        </div>
+      )}
+      <p className="p-3 text-sm font-bold text-ink-foreground">
+        {lang === "ar" ? lesson.title_ar : lesson.title_en}
+      </p>
+    </section>
   );
 }
