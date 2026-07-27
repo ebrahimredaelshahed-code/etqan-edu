@@ -6,6 +6,7 @@ import { Copy, KeyRound, LogOut, ShieldCheck } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
+import { AdminLessons } from "@/components/admin/AdminLessons";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -192,6 +193,10 @@ function AdminDashboard({ lang }: { lang: "ar" | "en" }) {
             </button>
           </div>
         </section>
+
+        <AdminLessons courses={courses ?? []} lang={lang} />
+
+
 
         <section className="overflow-hidden rounded-3xl border border-border bg-card shadow-soft">
           <table className="w-full text-start text-sm">
