@@ -132,20 +132,7 @@ function CoursePlayer() {
           </div>
         </section>
 
-        {current && (
-          <section className="overflow-hidden rounded-3xl border border-border bg-ink p-3 shadow-lift">
-            <video
-              key={current.id}
-              src={current.video_url}
-              controls
-              controlsList="nodownload"
-              className="aspect-video w-full rounded-2xl bg-black"
-            />
-            <p className="p-3 text-sm font-bold text-ink-foreground">
-              {lang === "ar" ? current.title_ar : current.title_en}
-            </p>
-          </section>
-        )}
+        {current && <LessonPlayer lesson={current} lang={lang} />}
 
         <section className="space-y-3">
           <h2 className="text-lg font-extrabold">{t("lessonsList")}</h2>
