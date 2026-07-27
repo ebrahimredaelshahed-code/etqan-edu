@@ -1,12 +1,12 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CheckCircle2, Circle, Clock, PlayCircle } from "lucide-react";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
-import { resolveLessonVideoUrl } from "@/lib/lesson-video";
+import { resolveLessonVideoUrl, youtubeEmbedUrl, youtubeIdOf } from "@/lib/lesson-video";
 
 export const Route = createFileRoute("/courses/$courseId")({
   head: () => ({
