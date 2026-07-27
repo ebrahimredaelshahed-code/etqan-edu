@@ -9,16 +9,16 @@ import heroImage from "@/assets/hero.jpg";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "منصة إتقان — تعلم إلكتروني احترافي | Etqan Academy" },
+      { title: "Etqan" },
       {
         name: "description",
         content:
-          "منصة إتقان للتعليم الإلكتروني: دورات احترافية في البرمجة والتصميم وإدارة الأعمال واللغات مع متابعة التقدم وشهادات إتمام.",
+          "منصة إتقان للتعليم الإلكتروني.",
       },
       { property: "og:title", content: "منصة إتقان — تعلم إلكتروني احترافي | Etqan Academy" },
       {
         property: "og:description",
-        content: "منصة إتقان للتعليم الإلكتروني: دورات احترافية في البرمجة والتصميم وإدارة الأعمال واللغات مع متابعة التقدم وشهادات إتمام.",
+        content: "منصه اتقان للتعلمالاكلتروني ",
       },
     ],
   }),
