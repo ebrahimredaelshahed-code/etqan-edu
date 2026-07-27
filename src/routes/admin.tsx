@@ -6,6 +6,7 @@ import { Copy, KeyRound, LogOut, ShieldCheck } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
+import { AdminLessons } from "@/components/admin/AdminLessons";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
