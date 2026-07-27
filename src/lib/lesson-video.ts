@@ -10,6 +10,23 @@ export const isStorageRef = (url: string) => url.startsWith(STORAGE_PREFIX);
 export const storagePathOf = (url: string) =>
   isStorageRef(url) ? url.slice(STORAGE_PREFIX.length) : null;
 
+/** Extracts the YouTube video id from any common YouTube URL form. */
+export function youtubeIdOf(url: string | null | undefined): string | null {
+  if (!url) return null;
+  const value = url.trim();
+  if (/^[\w-]{11}$/.test(value)) return value;
+  const match = value.match(
+    /(?:youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/|v\/)|youtu\.be\/)([\w-]{11})/,
+  );
+  return match ? match[1] : null;
+}
+
+export const isYoutube = (url: string | null | undefined) => Boolean(youtubeIdOf(url));
+
+export const youtubeEmbedUrl = (id: string) =>
+  `https://www.youtube-nocookie.com/embed/${id}?rel=0&modestbranding=1&controls=0&disablekb=1&playsinline=1&iv_load_policy=3&fs=0&enablejsapi=1`;
+
+
 /** Returns a playable URL: signed URL for uploaded files, or the raw external URL. */
 export async function resolveLessonVideoUrl(videoUrl: string | null | undefined) {
   if (!videoUrl) return null;
