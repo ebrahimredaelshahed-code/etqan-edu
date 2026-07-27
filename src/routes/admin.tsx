@@ -193,6 +193,10 @@ function AdminDashboard({ lang }: { lang: "ar" | "en" }) {
           </div>
         </section>
 
+        <AdminLessons courses={courses ?? []} lang={lang} />
+
+
+
         <section className="overflow-hidden rounded-3xl border border-border bg-card shadow-soft">
           <table className="w-full text-start text-sm">
             <thead className="bg-secondary text-secondary-foreground">
