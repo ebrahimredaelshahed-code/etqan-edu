@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { CheckCircle2, Film, Trash2, Upload, VideoOff } from "lucide-react";
+import { CheckCircle2, Film, Link2, Trash2, VideoOff } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
-import { isStorageRef, removeLessonVideo, uploadLessonVideo } from "@/lib/lesson-video";
+import { youtubeIdOf } from "@/lib/lesson-video";
 
 type Course = { id: string; title_ar: string; title_en: string };
 
@@ -15,7 +15,7 @@ export function AdminLessons({ courses, lang }: { courses: Course[]; lang: "ar" 
   const [titleAr, setTitleAr] = useState("");
   const [titleEn, setTitleEn] = useState("");
   const [minutes, setMinutes] = useState(10);
-  const [file, setFile] = useState<File | null>(null);
+  const [youtube, setYoutube] = useState("");
   const [busy, setBusy] = useState(false);
 
   const { data: lessons } = useQuery({
@@ -39,23 +39,26 @@ export function AdminLessons({ courses, lang }: { courses: Course[]; lang: "ar" 
       toast.error(t("selectCourseFirst"));
       return;
     }
+    const id = youtubeIdOf(youtube);
+    if (!id) {
+      toast.error(t("invalidYoutube"));
+      return;
+    }
     setBusy(true);
     try {
-      let videoUrl = "";
-      if (file) videoUrl = await uploadLessonVideo(courseId, file);
       const { error } = await supabase.from("lessons").insert({
         course_id: courseId,
         title_ar: titleAr || titleEn,
         title_en: titleEn || titleAr,
         duration_minutes: minutes,
         position: (lessons?.length ?? 0) + 1,
-        video_url: videoUrl,
+        video_url: `https://www.youtube.com/watch?v=${id}`,
       });
       if (error) throw error;
       toast.success(t("lessonSaved"));
       setTitleAr("");
       setTitleEn("");
-      setFile(null);
+      setYoutube("");
       await refresh();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : String(e));
@@ -64,13 +67,19 @@ export function AdminLessons({ courses, lang }: { courses: Course[]; lang: "ar" 
     }
   };
 
-  const replaceVideo = async (lessonId: string, oldUrl: string, newFile: File) => {
+  const updateVideo = async (lessonId: string, raw: string) => {
+    const id = youtubeIdOf(raw);
+    if (!id) {
+      toast.error(t("invalidYoutube"));
+      return;
+    }
     setBusy(true);
     try {
-      const videoUrl = await uploadLessonVideo(courseId, newFile);
-      const { error } = await supabase.from("lessons").update({ video_url: videoUrl }).eq("id", lessonId);
+      const { error } = await supabase
+        .from("lessons")
+        .update({ video_url: `https://www.youtube.com/watch?v=${id}` })
+        .eq("id", lessonId);
       if (error) throw error;
-      await removeLessonVideo(oldUrl);
       toast.success(t("lessonSaved"));
       await refresh();
     } catch (e) {
@@ -80,12 +89,11 @@ export function AdminLessons({ courses, lang }: { courses: Course[]; lang: "ar" 
     }
   };
 
-  const deleteLesson = async (lessonId: string, videoUrl: string) => {
+  const deleteLesson = async (lessonId: string) => {
     setBusy(true);
     try {
       const { error } = await supabase.from("lessons").delete().eq("id", lessonId);
       if (error) throw error;
-      await removeLessonVideo(videoUrl);
       toast.success(t("lessonDeleted"));
       await refresh();
     } catch (e) {
@@ -135,17 +143,18 @@ export function AdminLessons({ courses, lang }: { courses: Course[]; lang: "ar" 
           className="rounded-2xl border border-border bg-background px-4 py-3 text-sm"
         />
         <input
-          type="file"
-          accept="video/*"
-          onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-          className="rounded-2xl border border-border bg-background px-4 py-2.5 text-sm file:me-3 file:rounded-full file:border-0 file:bg-secondary file:px-4 file:py-1.5 file:text-xs file:font-bold"
+          value={youtube}
+          onChange={(e) => setYoutube(e.target.value)}
+          dir="ltr"
+          placeholder={t("youtubeUrl")}
+          className="rounded-2xl border border-border bg-background px-4 py-3 text-sm"
         />
         <button
           disabled={busy}
           onClick={addLesson}
           className="inline-flex items-center justify-center gap-2 rounded-2xl bg-primary px-7 py-3 text-sm font-extrabold text-primary-foreground disabled:opacity-60 sm:col-span-2"
         >
-          <Upload className="size-4" /> {busy ? t("uploading") : t("addLesson")}
+          <Link2 className="size-4" /> {busy ? t("uploading") : t("addLesson")}
         </button>
       </div>
 
@@ -153,48 +162,79 @@ export function AdminLessons({ courses, lang }: { courses: Course[]; lang: "ar" 
         <div className="mt-6 space-y-3">
           {(lessons ?? []).length === 0 && <p className="text-sm text-muted-foreground">{t("noLessons")}</p>}
           {(lessons ?? []).map((l, i) => (
-            <div
+            <LessonRow
               key={l.id}
-              className="flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-background p-4"
-            >
-              <span className="flex-1 text-sm font-bold">
-                {i + 1}. {lang === "ar" ? l.title_ar : l.title_en}{" "}
-                <span className="text-xs font-normal text-muted-foreground">
-                  ({l.duration_minutes} {lang === "ar" ? "دقيقة" : "min"})
-                </span>
-              </span>
-              <span
-                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold ${
-                  l.video_url ? "bg-secondary text-secondary-foreground" : "bg-muted text-muted-foreground"
-                }`}
-              >
-                {l.video_url ? <CheckCircle2 className="size-3.5" /> : <VideoOff className="size-3.5" />}
-                {l.video_url ? (isStorageRef(l.video_url) ? t("videoReady") : "URL") : t("videoMissing")}
-              </span>
-              <label className="cursor-pointer rounded-full border border-border px-4 py-1.5 text-xs font-bold">
-                {t("replaceVideo")}
-                <input
-                  type="file"
-                  accept="video/*"
-                  className="hidden"
-                  onChange={(e) => {
-                    const f = e.target.files?.[0];
-                    if (f) replaceVideo(l.id, l.video_url, f);
-                  }}
-                />
-              </label>
-              <button
-                disabled={busy}
-                onClick={() => deleteLesson(l.id, l.video_url)}
-                className="rounded-full bg-destructive/10 p-2 text-destructive disabled:opacity-60"
-                aria-label={t("deleteLesson")}
-              >
-                <Trash2 className="size-4" />
-              </button>
-            </div>
+              index={i}
+              lesson={l}
+              lang={lang}
+              busy={busy}
+              onUpdate={updateVideo}
+              onDelete={deleteLesson}
+            />
           ))}
         </div>
       )}
     </section>
+  );
+}
+
+function LessonRow({
+  index,
+  lesson,
+  lang,
+  busy,
+  onUpdate,
+  onDelete,
+}: {
+  index: number;
+  lesson: { id: string; title_ar: string; title_en: string; duration_minutes: number; video_url: string };
+  lang: "ar" | "en";
+  busy: boolean;
+  onUpdate: (id: string, url: string) => Promise<void>;
+  onDelete: (id: string) => Promise<void>;
+}) {
+  const { t } = useI18n();
+  const [url, setUrl] = useState(lesson.video_url);
+  const linked = Boolean(youtubeIdOf(lesson.video_url));
+
+  return (
+    <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-background p-4">
+      <span className="w-full text-sm font-bold sm:w-auto sm:flex-1">
+        {index + 1}. {lang === "ar" ? lesson.title_ar : lesson.title_en}{" "}
+        <span className="text-xs font-normal text-muted-foreground">
+          ({lesson.duration_minutes} {lang === "ar" ? "دقيقة" : "min"})
+        </span>
+      </span>
+      <span
+        className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold ${
+          linked ? "bg-secondary text-secondary-foreground" : "bg-muted text-muted-foreground"
+        }`}
+      >
+        {linked ? <CheckCircle2 className="size-3.5" /> : <VideoOff className="size-3.5" />}
+        {linked ? t("videoReady") : t("videoMissing")}
+      </span>
+      <input
+        value={url}
+        dir="ltr"
+        onChange={(e) => setUrl(e.target.value)}
+        placeholder={t("youtubeUrl")}
+        className="min-w-0 flex-1 rounded-full border border-border bg-card px-4 py-2 text-xs"
+      />
+      <button
+        disabled={busy}
+        onClick={() => onUpdate(lesson.id, url)}
+        className="rounded-full border border-border px-4 py-1.5 text-xs font-bold disabled:opacity-60"
+      >
+        {t("replaceVideo")}
+      </button>
+      <button
+        disabled={busy}
+        onClick={() => onDelete(lesson.id)}
+        className="rounded-full bg-destructive/10 p-2 text-destructive disabled:opacity-60"
+        aria-label={t("deleteLesson")}
+      >
+        <Trash2 className="size-4" />
+      </button>
+    </div>
   );
 }
