@@ -220,9 +220,9 @@ function LessonPlayer({
             referrerPolicy="strict-origin-when-cross-origin"
             className="absolute inset-0 size-full"
           />
-          {/* Blocks YouTube title, channel link, share and "watch on YouTube" — playback controls stay usable */}
+          {/* Blocks YouTube title, channel link, share and "watch on YouTube" — playback controls (incl. settings) stay usable */}
           <div className="absolute inset-x-0 top-0 h-16 cursor-default bg-transparent" aria-hidden />
-          <div className="absolute bottom-10 end-14 h-8 w-24 cursor-default bg-transparent" aria-hidden />
+          <div className="absolute bottom-12 end-2 h-8 w-28 cursor-default bg-transparent" aria-hidden />
           <button
             type="button"
             onClick={toggleFullscreen}
@@ -235,7 +235,7 @@ function LessonPlayer({
                   ? "ملء الشاشة"
                   : "Fullscreen"
             }
-            className="absolute bottom-2 end-2 z-10 rounded-lg bg-black/60 p-2 text-white transition hover:bg-black/80"
+            className="absolute top-2 end-2 z-20 rounded-lg bg-black/60 p-2 text-white transition hover:bg-black/80"
           >
             {isFull ? <Minimize className="size-4" /> : <Maximize className="size-4" />}
           </button>
