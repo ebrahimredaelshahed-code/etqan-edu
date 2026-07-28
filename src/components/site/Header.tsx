@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import brandLogo from "@/assets/etqan-logo.png.asset.json";
+import brandLogo from "@/assets/etqan-logo.png";
 import { GraduationCap, ChevronDown, User, BookOpen, LogOut, Globe } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
@@ -25,7 +25,7 @@ export function Header() {
       <div className="mx-auto flex h-18 max-w-6xl items-center justify-between gap-4 px-4 py-3">
         <Link to="/" className="flex items-center gap-2.5">
           <img
-            src={brandLogo.url}
+            src={brandLogo}
             alt={t("brand")}
             width={40}
             height={40}
