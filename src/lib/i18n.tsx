@@ -280,23 +280,16 @@ type I18nValue = {
 const I18nContext = createContext<I18nValue | null>(null);
 
 export function I18nProvider({ children }: { children: ReactNode }) {
-  const [lang, setLangState] = useState<Lang>("ar");
-
-  useEffect(() => {
-    const stored = typeof window !== "undefined" ? window.localStorage.getItem("lang") : null;
-    if (stored === "ar" || stored === "en") setLangState(stored);
-  }, []);
+  const [lang] = useState<Lang>("ar");
 
   useEffect(() => {
     if (typeof document === "undefined") return;
-    document.documentElement.lang = lang;
-    document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
-  }, [lang]);
-
-  const setLang = useCallback((next: Lang) => {
-    setLangState(next);
-    if (typeof window !== "undefined") window.localStorage.setItem("lang", next);
+    document.documentElement.lang = "ar";
+    document.documentElement.dir = "rtl";
   }, []);
+
+  const setLang = useCallback((_next: Lang) => {}, []);
+
 
   const value = useMemo<I18nValue>(
     () => ({
