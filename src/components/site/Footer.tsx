@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Mail, Phone } from "lucide-react";
-import brandLogo from "@/assets/etqan-logo.png.asset.json";
+import brandLogo from "@/assets/etqan-logo.png";
 import { useI18n } from "@/lib/i18n";
 
 export function Footer() {
