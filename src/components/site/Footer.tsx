@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { GraduationCap, Mail, Phone } from "lucide-react";
+import { Mail, Phone } from "lucide-react";
 import brandLogo from "@/assets/etqan-logo.png.asset.json";
 import { useI18n } from "@/lib/i18n";
 
