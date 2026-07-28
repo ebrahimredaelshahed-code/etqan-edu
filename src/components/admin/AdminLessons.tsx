@@ -13,7 +13,6 @@ export function AdminLessons({ courses, lang }: { courses: Course[]; lang: "ar" 
   const queryClient = useQueryClient();
   const [courseId, setCourseId] = useState("");
   const [titleAr, setTitleAr] = useState("");
-  const [titleEn, setTitleEn] = useState("");
   const [minutes, setMinutes] = useState(10);
   const [youtube, setYoutube] = useState("");
   const [busy, setBusy] = useState(false);
@@ -48,8 +47,8 @@ export function AdminLessons({ courses, lang }: { courses: Course[]; lang: "ar" 
     try {
       const { error } = await supabase.from("lessons").insert({
         course_id: courseId,
-        title_ar: titleAr || titleEn,
-        title_en: titleEn || titleAr,
+        title_ar: titleAr,
+        title_en: titleAr,
         duration_minutes: minutes,
         position: (lessons?.length ?? 0) + 1,
         video_url: `https://www.youtube.com/watch?v=${id}`,
@@ -57,7 +56,6 @@ export function AdminLessons({ courses, lang }: { courses: Course[]; lang: "ar" 
       if (error) throw error;
       toast.success(t("lessonSaved"));
       setTitleAr("");
-      setTitleEn("");
       setYoutube("");
       await refresh();
     } catch (e) {
@@ -126,12 +124,6 @@ export function AdminLessons({ courses, lang }: { courses: Course[]; lang: "ar" 
           value={titleAr}
           onChange={(e) => setTitleAr(e.target.value)}
           placeholder={t("lessonTitleAr")}
-          className="rounded-2xl border border-border bg-background px-4 py-3 text-sm"
-        />
-        <input
-          value={titleEn}
-          onChange={(e) => setTitleEn(e.target.value)}
-          placeholder={t("lessonTitleEn")}
           className="rounded-2xl border border-border bg-background px-4 py-3 text-sm"
         />
         <input

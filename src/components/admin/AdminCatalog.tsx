@@ -12,11 +12,9 @@ export function AdminCatalog({ lang }: { lang: "ar" | "en" }) {
 
   const [slug, setSlug] = useState("");
   const [nameAr, setNameAr] = useState("");
-  const [nameEn, setNameEn] = useState("");
 
   const [categoryId, setCategoryId] = useState("");
   const [titleAr, setTitleAr] = useState("");
-  const [titleEn, setTitleEn] = useState("");
   const [price, setPrice] = useState(0);
   const [hours, setHours] = useState(1);
   const [instructor, setInstructor] = useState("");
@@ -50,14 +48,13 @@ export function AdminCatalog({ lang }: { lang: "ar" | "en" }) {
     run(async () => {
       const { error } = await supabase.from("categories").insert({
         slug: slug.trim().toLowerCase(),
-        name_ar: nameAr || nameEn,
-        name_en: nameEn || nameAr,
+        name_ar: nameAr,
+        name_en: nameAr,
       });
       if (error) throw error;
       toast.success(t("savedOk"));
       setSlug("");
       setNameAr("");
-      setNameEn("");
     }, [["admin-categories"]]);
 
   const deleteCategory = (id: string) =>
@@ -72,8 +69,8 @@ export function AdminCatalog({ lang }: { lang: "ar" | "en" }) {
       if (!categoryId) throw new Error(t("selectCategoryFirst"));
       const { error } = await supabase.from("courses").insert({
         category_id: categoryId,
-        title_ar: titleAr || titleEn,
-        title_en: titleEn || titleAr,
+        title_ar: titleAr,
+        title_en: titleAr,
         price,
         duration_hours: hours,
         instructor,
@@ -82,7 +79,6 @@ export function AdminCatalog({ lang }: { lang: "ar" | "en" }) {
       if (error) throw error;
       toast.success(t("savedOk"));
       setTitleAr("");
-      setTitleEn("");
       setInstructor("");
       setImage("");
     }, [["admin-catalog-courses", categoryId], ["admin-courses"]]);
@@ -104,7 +100,6 @@ export function AdminCatalog({ lang }: { lang: "ar" | "en" }) {
         </h2>
         <div className="mt-5 grid gap-3 sm:grid-cols-3">
           <input value={nameAr} onChange={(e) => setNameAr(e.target.value)} placeholder={t("categoryNameAr")} className={field} />
-          <input value={nameEn} onChange={(e) => setNameEn(e.target.value)} placeholder={t("categoryNameEn")} className={field} />
           <input value={slug} dir="ltr" onChange={(e) => setSlug(e.target.value)} placeholder={t("slug")} className={field} />
           <button
             disabled={busy}
@@ -150,7 +145,6 @@ export function AdminCatalog({ lang }: { lang: "ar" | "en" }) {
             ))}
           </select>
           <input value={titleAr} onChange={(e) => setTitleAr(e.target.value)} placeholder={t("courseTitleAr")} className={field} />
-          <input value={titleEn} onChange={(e) => setTitleEn(e.target.value)} placeholder={t("courseTitleEn")} className={field} />
           <input type="number" min={0} value={price} onChange={(e) => setPrice(Number(e.target.value))} placeholder={t("coursePrice")} className={field} />
           <input type="number" min={0} value={hours} onChange={(e) => setHours(Number(e.target.value))} placeholder={t("courseDuration")} className={field} />
           <input value={instructor} onChange={(e) => setInstructor(e.target.value)} placeholder={t("courseInstructor")} className={field} />
