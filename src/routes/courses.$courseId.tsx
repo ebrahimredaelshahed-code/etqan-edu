@@ -219,7 +219,21 @@ function LessonPlayer({
             allowFullScreen
             referrerPolicy="strict-origin-when-cross-origin"
             className="absolute inset-0 size-full"
+            onLoad={(e) => {
+              const win = (e.currentTarget as HTMLIFrameElement).contentWindow;
+              const send = (func: string, args: unknown[]) =>
+                win?.postMessage(JSON.stringify({ event: "command", func, args }), "*");
+              // Ask YouTube for the highest available quality once the player is ready
+              const timers = [400, 1200, 2500].map((ms) =>
+                window.setTimeout(() => {
+                  send("setPlaybackQualityRange", ["hd2160", "hd1080"]);
+                  send("setPlaybackQuality", ["highres"]);
+                }, ms),
+              );
+              return () => timers.forEach(clearTimeout);
+            }}
           />
+
           {/* Blocks YouTube title, channel link, share and "watch on YouTube" — playback controls stay usable */}
           <div className="absolute inset-x-0 top-0 h-16 cursor-default bg-transparent" aria-hidden />
           <div className="absolute bottom-10 end-14 h-8 w-24 cursor-default bg-transparent" aria-hidden />
