@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
+import brandLogo from "@/assets/etqan-logo.png.asset.json";
 import { GraduationCap, ChevronDown, User, BookOpen, LogOut, Globe } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
