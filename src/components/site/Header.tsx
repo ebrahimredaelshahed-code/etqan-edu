@@ -25,7 +25,7 @@ export function Header() {
       <div className="mx-auto flex h-18 max-w-6xl items-center justify-between gap-4 px-4 py-3">
         <Link to="/" className="flex items-center gap-2.5">
           <img
-            src={brandLogo.url}
+            src={brandLogo}
             alt={t("brand")}
             width={40}
             height={40}
