@@ -38,14 +38,7 @@ export function Header() {
         </Link>
 
         <div className="flex items-center gap-2">
-          <button
-            onClick={toggle}
-            className="flex items-center gap-1.5 rounded-full border border-border px-3 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-secondary"
-            aria-label="switch language"
-          >
-            <Globe className="size-4" />
-            {lang === "ar" ? "EN" : "ع"}
-          </button>
+
 
           {!user ? (
             <div className="flex items-center gap-2">
