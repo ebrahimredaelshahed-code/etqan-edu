@@ -201,13 +201,14 @@ function LessonPlayer({
             key={youtubeId}
             src={youtubeEmbedUrl(youtubeId)}
             title={lang === "ar" ? lesson.title_ar : lesson.title_en}
-            allow="accelerometer; encrypted-media; gyroscope; picture-in-picture"
+            allow="accelerometer; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+            allowFullScreen
             referrerPolicy="strict-origin-when-cross-origin"
             className="absolute inset-0 size-full"
           />
-          {/* Blocks YouTube title, channel link, share and "watch on YouTube" — playback controls stay usable */}
+          {/* Blocks YouTube title, channel link, share and "watch on YouTube" — playback + fullscreen controls stay usable */}
           <div className="absolute inset-x-0 top-0 h-16 cursor-default bg-transparent" aria-hidden />
-          <div className="absolute bottom-9 end-0 h-9 w-32 cursor-default bg-transparent" aria-hidden />
+          <div className="absolute bottom-10 end-14 h-8 w-24 cursor-default bg-transparent" aria-hidden />
         </div>
       ) : src ? (
         <video
