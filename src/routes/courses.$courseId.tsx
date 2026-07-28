@@ -183,12 +183,6 @@ function LessonPlayer({
 }) {
   const { t } = useI18n();
   const youtubeId = youtubeIdOf(lesson.video_url);
-  const iframeRef = useRef<HTMLIFrameElement | null>(null);
-  const [playing, setPlaying] = useState(false);
-
-  useEffect(() => {
-    setPlaying(false);
-  }, [lesson.id]);
 
   const { data: src, isLoading } = useQuery({
     queryKey: ["lesson-video", lesson.id, lesson.video_url],
@@ -196,44 +190,24 @@ function LessonPlayer({
     queryFn: () => resolveLessonVideoUrl(lesson.video_url),
   });
 
-  const command = (func: "playVideo" | "pauseVideo") => {
-    iframeRef.current?.contentWindow?.postMessage(
-      JSON.stringify({ event: "command", func, args: [] }),
-      "*",
-    );
-  };
-
-  const togglePlay = () => {
-    command(playing ? "pauseVideo" : "playVideo");
-    setPlaying((p) => !p);
-  };
-
   return (
     <section className="overflow-hidden rounded-3xl border border-border bg-ink p-3 shadow-lift">
       {youtubeId ? (
-        <div className="relative aspect-video w-full overflow-hidden rounded-2xl bg-black">
+        <div
+          className="relative aspect-video w-full overflow-hidden rounded-2xl bg-black"
+          onContextMenu={(e) => e.preventDefault()}
+        >
           <iframe
-            ref={iframeRef}
             key={youtubeId}
             src={youtubeEmbedUrl(youtubeId)}
             title={lang === "ar" ? lesson.title_ar : lesson.title_en}
             allow="accelerometer; encrypted-media; gyroscope; picture-in-picture"
             referrerPolicy="strict-origin-when-cross-origin"
-            className="pointer-events-none absolute inset-0 size-full"
+            className="absolute inset-0 size-full"
           />
-          {/* Overlay blocks all YouTube UI: no links to youtube.com, channel, or share */}
-          <button
-            type="button"
-            onClick={togglePlay}
-            aria-label={playing ? t("pause") : t("play")}
-            className="absolute inset-0 size-full cursor-pointer bg-transparent"
-          >
-            {!playing && (
-              <span className="absolute inset-0 grid place-items-center bg-black/35">
-                <PlayCircle className="size-16 text-white/90" />
-              </span>
-            )}
-          </button>
+          {/* Blocks YouTube title, channel link, share and "watch on YouTube" — playback controls stay usable */}
+          <div className="absolute inset-x-0 top-0 h-16 cursor-default bg-transparent" aria-hidden />
+          <div className="absolute bottom-9 end-0 h-9 w-32 cursor-default bg-transparent" aria-hidden />
         </div>
       ) : src ? (
         <video
@@ -248,19 +222,12 @@ function LessonPlayer({
           {isLoading ? t("loading") : t("videoMissing")}
         </div>
       )}
-      <div className="flex items-center justify-between gap-3 p-3">
+      <div className="p-3">
         <p className="text-sm font-bold text-ink-foreground">
           {lang === "ar" ? lesson.title_ar : lesson.title_en}
         </p>
-        {youtubeId && (
-          <button
-            onClick={togglePlay}
-            className="rounded-full bg-primary px-5 py-2 text-xs font-extrabold text-primary-foreground"
-          >
-            {playing ? t("pause") : t("play")}
-          </button>
-        )}
       </div>
     </section>
   );
 }
+
