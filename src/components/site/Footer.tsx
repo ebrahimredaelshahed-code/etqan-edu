@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
-import { GraduationCap, Mail, Phone } from "lucide-react";
+import { Mail, Phone } from "lucide-react";
+import brandLogo from "@/assets/etqan-logo.png.asset.json";
 import { useI18n } from "@/lib/i18n";
 
 export function Footer() {
@@ -9,7 +10,7 @@ export function Footer() {
       <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 sm:grid-cols-3">
         <div className="space-y-3">
           <div className="flex items-center gap-2 text-lg font-extrabold">
-            <GraduationCap className="size-5" /> {t("brand")}
+            <img src={brandLogo.url} alt={t("brand")} width={28} height={28} className="size-7 rounded-lg object-cover" /> {t("brand")}
           </div>
           <p className="max-w-xs text-sm opacity-70">{t("aboutText")}</p>
         </div>

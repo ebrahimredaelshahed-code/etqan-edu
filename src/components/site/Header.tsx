@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
+import brandLogo from "@/assets/etqan-logo.png.asset.json";
 import { GraduationCap, ChevronDown, User, BookOpen, LogOut, Globe } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
@@ -23,9 +24,13 @@ export function Header() {
     <header className="sticky top-0 z-50 border-b border-border/70 bg-background/85 backdrop-blur-xl">
       <div className="mx-auto flex h-18 max-w-6xl items-center justify-between gap-4 px-4 py-3">
         <Link to="/" className="flex items-center gap-2.5">
-          <span className="flex size-10 items-center justify-center rounded-xl bg-hero-gradient text-ink-foreground shadow-soft">
-            <GraduationCap className="size-5" />
-          </span>
+          <img
+            src={brandLogo.url}
+            alt={t("brand")}
+            width={40}
+            height={40}
+            className="size-10 rounded-xl object-cover shadow-soft"
+          />
           <span className="flex flex-col leading-tight">
             <span className="text-lg font-extrabold tracking-tight">{t("brand")}</span>
             <span className="text-[11px] text-muted-foreground">{t("tagline")}</span>
