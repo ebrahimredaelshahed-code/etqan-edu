@@ -1,12 +1,12 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import brandLogo from "@/assets/etqan-logo.png";
-import { GraduationCap, ChevronDown, User, BookOpen, LogOut, Globe } from "lucide-react";
+import { GraduationCap, ChevronDown, User, BookOpen, LogOut } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 
 export function Header() {
-  const { t, toggle, lang } = useI18n();
+  const { t } = useI18n();
   const { user, profile, signOut, isAdmin } = useAuth();
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
@@ -38,14 +38,7 @@ export function Header() {
         </Link>
 
         <div className="flex items-center gap-2">
-          <button
-            onClick={toggle}
-            className="flex items-center gap-1.5 rounded-full border border-border px-3 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-secondary"
-            aria-label="switch language"
-          >
-            <Globe className="size-4" />
-            {lang === "ar" ? "EN" : "ع"}
-          </button>
+
 
           {!user ? (
             <div className="flex items-center gap-2">
