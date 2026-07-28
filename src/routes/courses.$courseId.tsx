@@ -183,6 +183,19 @@ function LessonPlayer({
 }) {
   const { t } = useI18n();
   const youtubeId = youtubeIdOf(lesson.video_url);
+  const frameRef = useRef<HTMLDivElement>(null);
+  const [isFull, setIsFull] = useState(false);
+
+  useEffect(() => {
+    const onChange = () => setIsFull(Boolean(document.fullscreenElement));
+    document.addEventListener("fullscreenchange", onChange);
+    return () => document.removeEventListener("fullscreenchange", onChange);
+  }, []);
+
+  const toggleFullscreen = async () => {
+    if (document.fullscreenElement) await document.exitFullscreen();
+    else await frameRef.current?.requestFullscreen?.();
+  };
 
   const { data: src, isLoading } = useQuery({
     queryKey: ["lesson-video", lesson.id, lesson.video_url],
@@ -194,6 +207,7 @@ function LessonPlayer({
     <section className="overflow-hidden rounded-3xl border border-border bg-ink p-3 shadow-lift">
       {youtubeId ? (
         <div
+          ref={frameRef}
           className="relative aspect-video w-full overflow-hidden rounded-2xl bg-black"
           onContextMenu={(e) => e.preventDefault()}
         >
@@ -206,9 +220,25 @@ function LessonPlayer({
             referrerPolicy="strict-origin-when-cross-origin"
             className="absolute inset-0 size-full"
           />
-          {/* Blocks YouTube title, channel link, share and "watch on YouTube" — playback + fullscreen controls stay usable */}
+          {/* Blocks YouTube title, channel link, share and "watch on YouTube" — playback controls stay usable */}
           <div className="absolute inset-x-0 top-0 h-16 cursor-default bg-transparent" aria-hidden />
           <div className="absolute bottom-10 end-14 h-8 w-24 cursor-default bg-transparent" aria-hidden />
+          <button
+            type="button"
+            onClick={toggleFullscreen}
+            aria-label={
+              isFull
+                ? lang === "ar"
+                  ? "إنهاء ملء الشاشة"
+                  : "Exit fullscreen"
+                : lang === "ar"
+                  ? "ملء الشاشة"
+                  : "Fullscreen"
+            }
+            className="absolute bottom-2 end-2 z-10 rounded-lg bg-black/60 p-2 text-white transition hover:bg-black/80"
+          >
+            {isFull ? <Minimize className="size-4" /> : <Maximize className="size-4" />}
+          </button>
         </div>
       ) : src ? (
         <video
