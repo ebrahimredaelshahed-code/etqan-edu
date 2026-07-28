@@ -24,7 +24,8 @@ export function youtubeIdOf(url: string | null | undefined): string | null {
 export const isYoutube = (url: string | null | undefined) => Boolean(youtubeIdOf(url));
 
 export const youtubeEmbedUrl = (id: string) =>
-  `https://www.youtube-nocookie.com/embed/${id}?rel=0&modestbranding=1&controls=0&disablekb=1&playsinline=1&iv_load_policy=3&fs=0&enablejsapi=1`;
+  `https://www.youtube-nocookie.com/embed/${id}?rel=0&modestbranding=1&controls=1&playsinline=1&iv_load_policy=3&fs=0&enablejsapi=1`;
+
 
 
 /** Returns a playable URL: signed URL for uploaded files, or the raw external URL. */
