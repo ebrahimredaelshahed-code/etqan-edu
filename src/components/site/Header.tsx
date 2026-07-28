@@ -1,12 +1,12 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import brandLogo from "@/assets/etqan-logo.png";
-import { GraduationCap, ChevronDown, User, BookOpen, LogOut, Globe } from "lucide-react";
+import { GraduationCap, ChevronDown, User, BookOpen, LogOut } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 
 export function Header() {
-  const { t, toggle, lang } = useI18n();
+  const { t } = useI18n();
   const { user, profile, signOut, isAdmin } = useAuth();
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
