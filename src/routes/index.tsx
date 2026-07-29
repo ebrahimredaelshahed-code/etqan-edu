@@ -50,28 +50,31 @@ function Index() {
         <div className="grid gap-4 md:grid-cols-3 md:grid-rows-2">
           {/* main tile */}
           <div className="relative isolate overflow-hidden rounded-4xl border border-border bg-hero-gradient p-8 text-ink-foreground shadow-lift sm:p-12 md:col-span-2 md:row-span-2">
-            <div className="relative z-10 max-w-xl space-y-6">
-              <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-1.5 text-xs font-semibold backdrop-blur">
-                <Sparkles className="size-4 text-primary" /> {t("brand")}
-              </span>
-              <h1 className="font-display text-4xl font-bold leading-[1.15] sm:text-5xl">{t("heroTitle")}</h1>
-              <p className="text-base opacity-80 sm:text-lg">{t("heroSubtitle")}</p>
-              <Link
-                to="/categories"
-                className="inline-flex items-center gap-2 rounded-full bg-accent-gradient px-7 py-4 text-base font-bold text-accent-foreground shadow-lift transition-transform hover:-translate-y-1"
-              >
-                {t("browseCategories")}
-                <ArrowLeft className={lang === "ar" ? "size-5" : "size-5 rotate-180"} />
-              </Link>
+            <div className="grid items-center gap-6 sm:grid-cols-[1.15fr_0.85fr]">
+              <div className="space-y-6">
+                <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-1.5 text-xs font-semibold backdrop-blur">
+                  <Sparkles className="size-4 text-primary" /> {t("brand")}
+                </span>
+                <h1 className="font-display text-3xl font-bold leading-[1.2] sm:text-4xl">{t("heroTitle")}</h1>
+                <p className="text-base opacity-80">{t("heroSubtitle")}</p>
+                <Link
+                  to="/categories"
+                  className="inline-flex items-center gap-2 rounded-full bg-accent-gradient px-7 py-4 text-base font-bold text-accent-foreground shadow-lift transition-transform hover:-translate-y-1"
+                >
+                  {t("browseCategories")}
+                  <ArrowLeft className={lang === "ar" ? "size-5" : "size-5 rotate-180"} />
+                </Link>
+              </div>
+              <img
+                src={heroIllustration}
+                alt="رسم توضيحي لمتدرب يتابع دورة تدريبية عبر الإنترنت"
+                width={1200}
+                height={1008}
+                className="pointer-events-none mx-auto w-full max-w-sm select-none"
+              />
             </div>
-            <img
-              src={heroIllustration}
-              alt="رسم توضيحي لمتدرب يتابع دورة تدريبية عبر الإنترنت"
-              width={1200}
-              height={1008}
-              className="pointer-events-none absolute -bottom-6 start-0 z-0 w-[52%] max-w-md opacity-90 md:opacity-100"
-            />
           </div>
+
 
           {/* stat tiles */}
           <div className="rounded-4xl border border-border bg-card p-6 shadow-soft">
