@@ -31,10 +31,7 @@ export function Header() {
             height={40}
             className="size-10 rounded-xl object-cover shadow-soft"
           />
-          <span className="flex flex-col leading-tight">
-            <span className="text-lg font-extrabold tracking-tight">{t("brand")}</span>
-            <span className="text-[11px] text-muted-foreground">{t("tagline")}</span>
-          </span>
+          <span className="text-lg font-extrabold tracking-tight">{t("brand")}</span>
         </Link>
 
         <div className="flex items-center gap-2">
