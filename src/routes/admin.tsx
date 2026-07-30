@@ -117,6 +117,7 @@ const TABS = [
   { id: "codes", label: "tabCodes", icon: KeyRound },
   { id: "catalog", label: "tabCatalog", icon: Layers },
   { id: "videos", label: "tabVideos", icon: Film },
+  { id: "users", label: "tabUsers", icon: Users },
   { id: "admins", label: "tabAdmins", icon: ShieldCheck },
 ] as const;
 
