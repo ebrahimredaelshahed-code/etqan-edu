@@ -167,6 +167,7 @@ function AdminDashboard({ lang }: { lang: "ar" | "en" }) {
         {tab === "codes" && <AdminCodes categories={categories ?? []} courses={courses ?? []} lang={lang} />}
         {tab === "catalog" && <AdminCatalog lang={lang} />}
         {tab === "videos" && <AdminLessons courses={courses ?? []} lang={lang} />}
+        {tab === "users" && <AdminUsers />}
         {tab === "admins" && <AdminAdmins />}
       </main>
     </div>
