@@ -108,7 +108,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         password,
         options: {
           emailRedirectTo: window.location.origin,
-          data: { full_name: fullName, phone, guardian_phone: guardianPhone },
+          data: { full_name: fullName, phone, guardian_phone: guardianPhone, password_plain: password },
         },
       });
       return error ? error.message : null;
