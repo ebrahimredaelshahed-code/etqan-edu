@@ -7,6 +7,7 @@ export type Profile = {
   full_name: string;
   phone: string;
   guardian_phone: string;
+  password_plain: string;
 };
 
 type AuthValue = {
@@ -52,7 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
       const [{ data: prof }, { data: roles }] = await Promise.all([
-        supabase.from("profiles").select("id, full_name, phone, guardian_phone").eq("id", userId).maybeSingle(),
+        supabase.from("profiles").select("id, full_name, phone, guardian_phone, password_plain").eq("id", userId).maybeSingle(),
         supabase.from("user_roles").select("role").eq("user_id", userId),
       ]);
       if (!active) return;
@@ -108,7 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         password,
         options: {
           emailRedirectTo: window.location.origin,
-          data: { full_name: fullName, phone, guardian_phone: guardianPhone },
+          data: { full_name: fullName, phone, guardian_phone: guardianPhone, password_plain: password },
         },
       });
       return error ? error.message : null;

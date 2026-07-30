@@ -218,6 +218,7 @@ export type Database = {
           full_name: string
           guardian_phone: string
           id: string
+          password_plain: string
           phone: string
         }
         Insert: {
@@ -225,6 +226,7 @@ export type Database = {
           full_name?: string
           guardian_phone?: string
           id: string
+          password_plain?: string
           phone?: string
         }
         Update: {
@@ -232,6 +234,7 @@ export type Database = {
           full_name?: string
           guardian_phone?: string
           id?: string
+          password_plain?: string
           phone?: string
         }
         Relationships: []
