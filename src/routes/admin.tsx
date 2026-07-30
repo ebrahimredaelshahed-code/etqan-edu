@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Film, KeyRound, Layers, LogOut, ShieldCheck } from "lucide-react";
+import { Film, KeyRound, Layers, LogOut, ShieldCheck, Users } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,6 +10,7 @@ import { AdminLessons } from "@/components/admin/AdminLessons";
 import { AdminCatalog } from "@/components/admin/AdminCatalog";
 import { AdminCodes } from "@/components/admin/AdminCodes";
 import { AdminAdmins } from "@/components/admin/AdminAdmins";
+import { AdminUsers } from "@/components/admin/AdminUsers";
 
 
 export const Route = createFileRoute("/admin")({
