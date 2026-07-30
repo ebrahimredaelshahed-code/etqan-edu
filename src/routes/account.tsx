@@ -70,12 +70,15 @@ function AccountPage() {
         </div>
 
         {tab === "profile" ? (
-          <div className="mt-8 grid gap-4 sm:grid-cols-2">
-            <InfoCard icon={User} label={t("fullName")} value={profile?.full_name || "—"} />
-            <InfoCard icon={Phone} label={t("phone")} value={profile?.phone || "—"} />
-            <InfoCard icon={Users} label={t("guardianPhone")} value={profile?.guardian_phone || "—"} />
-            <InfoCard icon={BookOpen} label={t("myCourses")} value={String(courses?.length ?? 0)} />
-          </div>
+          <>
+            <div className="mt-8 grid gap-4 sm:grid-cols-2">
+              <InfoCard icon={User} label={t("fullName")} value={profile?.full_name || "—"} />
+              <InfoCard icon={Phone} label={t("phone")} value={profile?.phone || "—"} />
+              <InfoCard icon={Users} label={t("guardianPhone")} value={profile?.guardian_phone || "—"} />
+              <InfoCard icon={BookOpen} label={t("myCourses")} value={String(courses?.length ?? 0)} />
+            </div>
+            <PasswordCard />
+          </>
         ) : (
           <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {!courses?.length ? (
