@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
-import { BookOpen, KeyRound, Layers, Phone, User, Users } from "lucide-react";
+import { BookOpen, Phone, User, Users } from "lucide-react";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
@@ -47,17 +47,6 @@ function AccountPage() {
     },
   });
 
-  const { data: myCategories } = useQuery({
-    queryKey: ["my-categories", (courses ?? []).map((c) => c.category_id).join(",")],
-    enabled: Boolean(courses?.length),
-    queryFn: async () => {
-      const ids = Array.from(new Set((courses ?? []).map((c) => c.category_id)));
-      if (!ids.length) return [];
-      const { data } = await supabase.from("categories").select("id, slug, name_ar, name_en").in("id", ids);
-      return data ?? [];
-    },
-  });
-
   return (
     <SiteLayout>
       <div className="mx-auto max-w-5xl px-4 py-14">
@@ -81,38 +70,12 @@ function AccountPage() {
         </div>
 
         {tab === "profile" ? (
-          <>
-            <div className="mt-8 grid gap-4 sm:grid-cols-2">
-              <InfoCard icon={User} label={t("fullName")} value={profile?.full_name || "—"} />
-              <InfoCard icon={Phone} label={t("phone")} value={profile?.phone || "—"} />
-              <InfoCard icon={Users} label={t("guardianPhone")} value={profile?.guardian_phone || "—"} />
-              <InfoCard icon={KeyRound} label={t("savedPassword")} value={profile?.password_plain || "—"} />
-              <InfoCard icon={BookOpen} label={t("myCourses")} value={String(courses?.length ?? 0)} />
-              <InfoCard icon={Layers} label={t("myCategories")} value={String(myCategories?.length ?? 0)} />
-            </div>
-
-            <div className="mt-8 rounded-3xl border border-border bg-card p-6 shadow-soft">
-              <h2 className="flex items-center gap-2 font-extrabold">
-                <Layers className="size-5 text-primary" /> {t("myCategories")}
-              </h2>
-              {!myCategories?.length ? (
-                <p className="mt-3 text-sm text-muted-foreground">{t("noCategories")}</p>
-              ) : (
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {myCategories.map((c) => (
-                    <Link
-                      key={c.id}
-                      to="/categories/$slug"
-                      params={{ slug: c.slug }}
-                      className="rounded-full bg-secondary px-4 py-2 text-sm font-bold text-secondary-foreground hover:bg-primary hover:text-primary-foreground"
-                    >
-                      {lang === "ar" ? c.name_ar : c.name_en}
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </div>
-          </>
+          <div className="mt-8 grid gap-4 sm:grid-cols-2">
+            <InfoCard icon={User} label={t("fullName")} value={profile?.full_name || "—"} />
+            <InfoCard icon={Phone} label={t("phone")} value={profile?.phone || "—"} />
+            <InfoCard icon={Users} label={t("guardianPhone")} value={profile?.guardian_phone || "—"} />
+            <InfoCard icon={BookOpen} label={t("myCourses")} value={String(courses?.length ?? 0)} />
+          </div>
         ) : (
           <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {!courses?.length ? (

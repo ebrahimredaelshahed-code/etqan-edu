@@ -24,38 +24,6 @@ export const listAdmins = createServerFn({ method: "GET" })
     return (profiles ?? []).map((p) => ({ id: p.id, fullName: p.full_name, phone: p.phone }));
   });
 
-export const listUsers = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
-    await assertAdmin(context.supabase as never, context.userId);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-
-    const [{ data: profiles }, { data: enrollments }, { data: courses }, { data: categories }] = await Promise.all([
-      supabaseAdmin.from("profiles").select("id, full_name, phone, guardian_phone, password_plain, created_at").order("created_at", { ascending: false }),
-      supabaseAdmin.from("enrollments").select("user_id, course_id"),
-      supabaseAdmin.from("courses").select("id, title_ar, category_id"),
-      supabaseAdmin.from("categories").select("id, name_ar"),
-    ]);
-
-    const courseById = new Map((courses ?? []).map((c) => [c.id, c]));
-    const categoryById = new Map((categories ?? []).map((c) => [c.id, c.name_ar]));
-
-    return (profiles ?? []).map((p) => {
-      const rows = (enrollments ?? []).filter((e) => e.user_id === p.id);
-      const userCourses = rows.map((e) => courseById.get(e.course_id)).filter(Boolean) as { id: string; title_ar: string; category_id: string }[];
-      const cats = Array.from(new Set(userCourses.map((c) => categoryById.get(c.category_id)).filter(Boolean) as string[]));
-      return {
-        id: p.id,
-        fullName: p.full_name,
-        phone: p.phone,
-        guardianPhone: p.guardian_phone,
-        password: p.password_plain,
-        categories: cats,
-        courses: userCourses.map((c) => c.title_ar),
-      };
-    });
-  });
-
 export const addAdmin = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data) =>

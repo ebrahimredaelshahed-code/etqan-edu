@@ -57,9 +57,7 @@ function CategoriesPage() {
                   <p className="mt-1.5 text-sm text-muted-foreground">
                     {lang === "ar" ? c.description_ar : c.description_en}
                   </p>
-                  <span className="mt-5 inline-flex w-full items-center justify-center rounded-full bg-primary px-5 py-3 text-sm font-extrabold text-primary-foreground transition group-hover:brightness-110">
-                    {t("subscribeAndView")}
-                  </span>
+                  <span className="mt-4 inline-block text-sm font-bold text-primary">{t("courses")} →</span>
                 </Link>
               );
             })}
