@@ -1,7 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
-import { BookOpen, Phone, User, Users } from "lucide-react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { BookOpen, KeyRound, Phone, User, Users } from "lucide-react";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
@@ -70,12 +71,15 @@ function AccountPage() {
         </div>
 
         {tab === "profile" ? (
-          <div className="mt-8 grid gap-4 sm:grid-cols-2">
-            <InfoCard icon={User} label={t("fullName")} value={profile?.full_name || "—"} />
-            <InfoCard icon={Phone} label={t("phone")} value={profile?.phone || "—"} />
-            <InfoCard icon={Users} label={t("guardianPhone")} value={profile?.guardian_phone || "—"} />
-            <InfoCard icon={BookOpen} label={t("myCourses")} value={String(courses?.length ?? 0)} />
-          </div>
+          <>
+            <div className="mt-8 grid gap-4 sm:grid-cols-2">
+              <InfoCard icon={User} label={t("fullName")} value={profile?.full_name || "—"} />
+              <InfoCard icon={Phone} label={t("phone")} value={profile?.phone || "—"} />
+              <InfoCard icon={Users} label={t("guardianPhone")} value={profile?.guardian_phone || "—"} />
+              <InfoCard icon={BookOpen} label={t("myCourses")} value={String(courses?.length ?? 0)} />
+            </div>
+            <PasswordCard />
+          </>
         ) : (
           <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {!courses?.length ? (
@@ -125,5 +129,66 @@ function InfoCard({
       <p className="mt-3 text-xs font-semibold text-muted-foreground">{label}</p>
       <p className="text-lg font-extrabold">{value}</p>
     </div>
+  );
+}
+
+function PasswordCard() {
+  const { t } = useI18n();
+  const [pwd, setPwd] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (pwd !== confirm) {
+      toast.error(t("passwordMismatch"));
+      return;
+    }
+    setBusy(true);
+    const { error } = await supabase.auth.updateUser({ password: pwd });
+    setBusy(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    setPwd("");
+    setConfirm("");
+    toast.success(t("passwordUpdated"));
+  };
+
+  return (
+    <form onSubmit={submit} className="mt-6 rounded-3xl border border-border bg-card p-6 shadow-soft">
+      <div className="flex items-center gap-2">
+        <KeyRound className="size-5 text-primary" />
+        <h2 className="font-extrabold">{t("changePassword")}</h2>
+      </div>
+      <p className="mt-2 text-xs text-muted-foreground">{t("passwordHidden")}</p>
+      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        <input
+          type="password"
+          value={pwd}
+          minLength={8}
+          required
+          onChange={(e) => setPwd(e.target.value)}
+          placeholder={t("newPassword")}
+          className="w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none focus:border-primary"
+        />
+        <input
+          type="password"
+          value={confirm}
+          minLength={8}
+          required
+          onChange={(e) => setConfirm(e.target.value)}
+          placeholder={t("confirmPassword")}
+          className="w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none focus:border-primary"
+        />
+      </div>
+      <button
+        disabled={busy}
+        className="mt-4 rounded-full bg-primary px-6 py-3 text-sm font-extrabold text-primary-foreground shadow-soft disabled:opacity-60"
+      >
+        {busy ? t("loading") : t("update")}
+      </button>
+    </form>
   );
 }
