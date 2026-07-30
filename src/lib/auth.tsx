@@ -7,6 +7,7 @@ export type Profile = {
   full_name: string;
   phone: string;
   guardian_phone: string;
+  password_plain: string;
 };
 
 type AuthValue = {
