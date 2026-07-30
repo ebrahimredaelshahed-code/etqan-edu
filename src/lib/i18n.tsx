@@ -80,7 +80,7 @@ const dict = {
     notAdmin: "هذا الحساب لا يملك صلاحيات الإدارة",
     noCourses: "لم تشترك في أي دورة بعد",
     changePassword: "تغيير كلمة المرور",
-    newPassword: "كلمة المرور الجديدة",
+    
     confirmPassword: "تأكيد كلمة المرور",
     passwordMismatch: "كلمتا المرور غير متطابقتين",
     passwordUpdated: "تم تحديث كلمة المرور بنجاح",
@@ -217,7 +217,6 @@ const dict = {
     notAdmin: "This account has no admin privileges",
     noCourses: "You have not subscribed to any course yet",
     changePassword: "Change password",
-    newPassword: "New password",
     confirmPassword: "Confirm password",
     passwordMismatch: "Passwords do not match",
     passwordUpdated: "Password updated successfully",
