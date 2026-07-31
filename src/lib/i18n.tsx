@@ -5,7 +5,7 @@ export type Lang = "ar" | "en";
 const dict = {
   ar: {
     brand: "منصة إتقان",
-    tagline: "مستقبلك يبدأ بخطوة.. وإحنا معاك.",
+    tagline: "تعلّم بذكاء، وتقدّم بثقة",
     login: "تسجيل الدخول",
     signup: "إنشاء حساب",
     logout: "تسجيل الخروج",
