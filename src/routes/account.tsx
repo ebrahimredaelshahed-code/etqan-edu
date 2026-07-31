@@ -48,6 +48,19 @@ function AccountPage() {
     },
   });
 
+  const { data: subjects } = useQuery({
+    queryKey: ["my-subjects", user?.id],
+    enabled: Boolean(user),
+    queryFn: async () => {
+      const { data: subs } = await supabase.from("category_subscriptions").select("category_id");
+      const ids = (subs ?? []).map((s) => s.category_id);
+      if (!ids.length) return [];
+      const { data } = await supabase.from("categories").select("*").in("id", ids);
+      return data ?? [];
+    },
+  });
+
+
   return (
     <SiteLayout>
       <div className="mx-auto max-w-5xl px-4 py-14">
