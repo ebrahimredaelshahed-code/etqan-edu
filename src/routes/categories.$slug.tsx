@@ -43,10 +43,11 @@ function CategoryCourses() {
   const { data, isLoading } = useQuery({
     queryKey: ["category-courses", slug],
     queryFn: async () => {
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
       const { data: category, error } = await supabase
         .from("categories")
         .select("*")
-        .eq("slug", slug)
+        .eq(isUuid ? "id" : "slug", slug)
         .maybeSingle();
       if (error) throw error;
       if (!category) return null;
