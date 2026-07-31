@@ -48,6 +48,17 @@ function AccountPage() {
     },
   });
 
+  const { data: subjects } = useQuery({
+    queryKey: ["my-subjects", (courses ?? []).map((c) => c.id).join(",")],
+    enabled: Boolean(courses?.length),
+    queryFn: async () => {
+      const catIds = Array.from(new Set((courses ?? []).map((c) => c.category_id)));
+      const { data } = await supabase.from("categories").select("*").in("id", catIds);
+      return data ?? [];
+    },
+  });
+
+
   return (
     <SiteLayout>
       <div className="mx-auto max-w-5xl px-4 py-14">
@@ -81,34 +92,73 @@ function AccountPage() {
             <PasswordCard />
           </>
         ) : (
-          <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {!courses?.length ? (
-              <p className="text-muted-foreground">{t("noCourses")}</p>
-            ) : (
-              courses.map((course) => (
-                <Link
-                  key={course.id}
-                  to="/courses/$courseId"
-                  params={{ courseId: course.id }}
-                  className="overflow-hidden rounded-3xl border border-border bg-card shadow-soft transition-transform hover:-translate-y-1"
-                >
-                  <img
-                    src={course.image_url}
-                    alt={lang === "ar" ? course.title_ar : course.title_en}
-                    loading="lazy"
-                    width={1280}
-                    height={720}
-                    className="h-36 w-full object-cover"
-                  />
-                  <div className="p-5">
-                    <h2 className="font-extrabold">{lang === "ar" ? course.title_ar : course.title_en}</h2>
-                    <p className="mt-2 text-sm font-bold text-primary">{t("enterCourse")} →</p>
-                  </div>
-                </Link>
-              ))
-            )}
+          <div className="mt-8 space-y-8">
+            <section>
+              <h2 className="mb-4 text-xl font-extrabold">{t("myCourses")}</h2>
+              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                {!subjects?.length ? (
+                  <p className="text-muted-foreground">{t("noCourses")}</p>
+                ) : (
+                  subjects.map((s) => (
+                    <Link
+                      key={s.id}
+                      to="/categories/$slug"
+                      params={{ slug: s.slug?.trim() ? s.slug : s.id }}
+                      className="overflow-hidden rounded-3xl border border-border bg-card shadow-soft transition-transform hover:-translate-y-1"
+                    >
+                      <div className="flex h-40 items-end justify-center overflow-hidden bg-[hsl(150_60%_38%)]">
+                        {s.teacher_image_url ? (
+                          <img
+                            src={s.teacher_image_url}
+                            alt={s.teacher_name || s.name_ar}
+                            loading="lazy"
+                            className="h-full w-auto object-contain drop-shadow-xl"
+                          />
+                        ) : null}
+                      </div>
+                      <div className="p-5 text-center">
+                        <h3 className="font-extrabold">{lang === "ar" ? s.name_ar : s.name_en}</h3>
+                        <p className="mt-1 text-sm text-muted-foreground">{s.teacher_name || t("teacher")}</p>
+                      </div>
+                    </Link>
+                  ))
+                )}
+              </div>
+            </section>
+
+            <section>
+              <h2 className="mb-4 text-xl font-extrabold">{t("courses")}</h2>
+              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                {!courses?.length ? (
+                  <p className="text-muted-foreground">{t("noCourses")}</p>
+                ) : (
+                  courses.map((course) => (
+                    <Link
+                      key={course.id}
+                      to="/courses/$courseId"
+                      params={{ courseId: course.id }}
+                      className="overflow-hidden rounded-3xl border border-border bg-card shadow-soft transition-transform hover:-translate-y-1"
+                    >
+                      <img
+                        src={course.image_url}
+                        alt={lang === "ar" ? course.title_ar : course.title_en}
+                        loading="lazy"
+                        width={1280}
+                        height={720}
+                        className="h-36 w-full object-cover"
+                      />
+                      <div className="p-5">
+                        <h3 className="font-extrabold">{lang === "ar" ? course.title_ar : course.title_en}</h3>
+                        <p className="mt-2 text-sm font-bold text-primary">{t("enterCourse")} →</p>
+                      </div>
+                    </Link>
+                  ))
+                )}
+              </div>
+            </section>
           </div>
         )}
+
       </div>
     </SiteLayout>
   );
