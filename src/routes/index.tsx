@@ -4,7 +4,7 @@ import { ArrowLeft, PlayCircle, ShieldCheck, Sparkles, Trophy } from "lucide-rea
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { useI18n } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
-import heroImage from "@/assets/hero.jpg";
+import heroPattern from "@/assets/hero-pattern.png.asset.json";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -47,11 +47,11 @@ function Index() {
     <SiteLayout>
       <section className="relative isolate overflow-hidden bg-hero-gradient text-ink-foreground">
         <img
-          src={heroImage}
+          src={heroPattern.url}
           alt=""
-          width={1600}
-          height={900}
-          className="absolute inset-0 size-full object-cover opacity-25"
+          width={1920}
+          height={1080}
+          className="absolute inset-0 size-full object-cover opacity-60"
         />
         <div className="relative mx-auto grid max-w-6xl gap-10 px-4 py-24 sm:py-32">
           <div className="max-w-2xl space-y-6">
