@@ -59,7 +59,7 @@ function Index() {
               <Sparkles className="size-4" /> {t("tagline")}
             </span>
             <h1 className="text-4xl font-extrabold leading-tight sm:text-6xl">{t("heroTitle")}</h1>
-            <p className="text-lg opacity-85">{t("heroSubtitle")}</p>
+            
             <Link
               to="/categories"
               className="inline-flex items-center gap-2 rounded-full bg-accent-gradient px-7 py-4 text-base font-extrabold text-accent-foreground shadow-lift transition-transform hover:-translate-y-1"
