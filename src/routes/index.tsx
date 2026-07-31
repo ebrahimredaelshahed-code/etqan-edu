@@ -53,7 +53,7 @@ function Index() {
           height={1080}
           className="absolute inset-0 size-full object-cover opacity-60"
         />
-        <div className="relative mx-auto grid max-w-6xl gap-10 px-4 py-24 sm:py-32">
+        <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-4 py-24 sm:py-32 md:grid-cols-2">
           <div className="max-w-2xl space-y-6">
             <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-sm font-semibold">
               <Sparkles className="size-4" /> {t("tagline")}
@@ -68,7 +68,17 @@ function Index() {
               <ArrowLeft className={lang === "ar" ? "size-5" : "size-5 rotate-180"} />
             </Link>
           </div>
+          <div className="flex justify-center md:justify-end">
+            <img
+              src={heroLogo.url}
+              alt="شعار منصة إتقان"
+              width={480}
+              height={480}
+              className="w-56 max-w-full rounded-full shadow-lift sm:w-72 md:w-80"
+            />
+          </div>
         </div>
+
       </section>
 
       <section className="mx-auto -mt-12 grid max-w-6xl grid-cols-2 gap-4 px-4 sm:grid-cols-4">
