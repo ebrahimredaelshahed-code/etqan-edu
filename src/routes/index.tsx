@@ -47,7 +47,7 @@ function Index() {
     <SiteLayout>
       <section className="relative isolate overflow-hidden bg-hero-gradient text-ink-foreground">
         <img
-          src={heroPattern.url}
+          src={heroPattern}
           alt=""
           width={1920}
           height={1080}
