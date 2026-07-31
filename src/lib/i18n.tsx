@@ -150,7 +150,9 @@ const dict = {
     logout: "Log out",
     account: "My account",
     profile: "Profile",
-    myCourses: "My courses",
+    myCourses: "My subjects",
+    teacher: "Teacher",
+    subscribeNow: "Subscribe now",
     browseCategories: "Browse categories",
     heroTitle: "A professional learning platform that builds your career",
     heroSubtitle:
