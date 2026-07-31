@@ -4,7 +4,7 @@ import { ArrowLeft, PlayCircle, ShieldCheck, Sparkles, Trophy } from "lucide-rea
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { useI18n } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
-import heroImage from "@/assets/hero.jpg";
+import heroPattern from "@/assets/hero-pattern.png.asset.json";
 
 export const Route = createFileRoute("/")({
   head: () => ({
