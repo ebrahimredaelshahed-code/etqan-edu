@@ -1,0 +1,1 @@
+UPDATE public.categories SET slug = 'cat-' || left(replace(id::text,'-',''), 8) WHERE slug IS NULL OR btrim(slug) = '';

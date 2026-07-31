@@ -46,8 +46,15 @@ export function AdminCatalog({ lang }: { lang: "ar" | "en" }) {
 
   const addCategory = () =>
     run(async () => {
+      const fallbackSlug = `cat-${Date.now().toString(36)}`;
+      const cleanSlug =
+        slug
+          .trim()
+          .toLowerCase()
+          .replace(/[^a-z0-9-]+/g, "-")
+          .replace(/^-+|-+$/g, "") || fallbackSlug;
       const { error } = await supabase.from("categories").insert({
-        slug: slug.trim().toLowerCase(),
+        slug: cleanSlug,
         name_ar: nameAr,
         name_en: nameAr,
       });
