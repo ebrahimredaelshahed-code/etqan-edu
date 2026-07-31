@@ -25,8 +25,6 @@ export type Database = {
           name_en: string
           slug: string
           sort_order: number
-          teacher_image_url: string
-          teacher_name: string
         }
         Insert: {
           created_at?: string
@@ -38,8 +36,6 @@ export type Database = {
           name_en: string
           slug: string
           sort_order?: number
-          teacher_image_url?: string
-          teacher_name?: string
         }
         Update: {
           created_at?: string
@@ -51,8 +47,6 @@ export type Database = {
           name_en?: string
           slug?: string
           sort_order?: number
-          teacher_image_url?: string
-          teacher_name?: string
         }
         Relationships: []
       }

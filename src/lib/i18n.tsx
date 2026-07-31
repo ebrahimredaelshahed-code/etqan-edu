@@ -11,9 +11,7 @@ const dict = {
     logout: "تسجيل الخروج",
     account: "حسابي",
     profile: "الملف الشخصي",
-    myCourses: "المواد المشترك بها",
-    teacher: "المدرس",
-    subscribeNow: "اشترك الآن",
+    myCourses: "الدورات المشترك بها",
     browseCategories: "إختار معلمك",
     heroTitle: "مناهجك الدراسية .. في مكانٍ واحد!!",
     heroSubtitle:
@@ -150,9 +148,7 @@ const dict = {
     logout: "Log out",
     account: "My account",
     profile: "Profile",
-    myCourses: "My subjects",
-    teacher: "Teacher",
-    subscribeNow: "Subscribe now",
+    myCourses: "My courses",
     browseCategories: "Browse categories",
     heroTitle: "A professional learning platform that builds your career",
     heroSubtitle:
