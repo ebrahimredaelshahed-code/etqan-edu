@@ -34,8 +34,7 @@ function CategoriesPage() {
   return (
     <SiteLayout>
       <div className="mx-auto max-w-6xl px-4 py-16">
-        <h1 className="text-4xl font-extrabold">{t("categories")}</h1>
-        <p className="mt-2 text-muted-foreground">{t("categoriesSubtitle")}</p>
+        <h1 className="text-4xl font-extrabold">{t("browseCategories")}</h1>
 
         {isLoading ? (
           <p className="mt-10 text-muted-foreground">{t("loading")}</p>
@@ -47,7 +46,7 @@ function CategoriesPage() {
                 <Link
                   key={c.id}
                   to="/categories/$slug"
-                  params={{ slug: c.slug }}
+                  params={{ slug: c.slug?.trim() ? c.slug : c.id }}
                   className="group rounded-3xl border border-border bg-card p-7 shadow-soft transition-all hover:-translate-y-1 hover:shadow-lift"
                 >
                   <span className="flex size-12 items-center justify-center rounded-2xl bg-hero-gradient text-ink-foreground">
