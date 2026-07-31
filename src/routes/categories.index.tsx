@@ -1,20 +1,22 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import * as Icons from "lucide-react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { ArrowLeft, BookOpen, GraduationCap, User } from "lucide-react";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { useI18n } from "@/lib/i18n";
+import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/categories/")({
   head: () => ({
     meta: [
-      { title: "الأقسام التدريبية | Categories — Etqan Academy" },
+      { title: "إختار معلمك | Etqan Academy" },
       {
         name: "description",
-        content: "تصفح أقسام منصة إتقان: البرمجة، التصميم، إدارة الأعمال واللغات، واختر دورتك.",
+        content: "تصفح المواد الدراسية ومعلميها على منصة إتقان واشترك في المادة التي تناسبك.",
       },
-      { property: "og:title", content: "الأقسام التدريبية | Etqan Academy" },
-      { property: "og:description", content: "اختر مجالك وابدأ رحلتك التعليمية على منصة إتقان." },
+      { property: "og:title", content: "إختار معلمك | Etqan Academy" },
+      { property: "og:description", content: "اختر مادتك ومعلمك وابدأ رحلتك التعليمية على منصة إتقان." },
     ],
   }),
   component: CategoriesPage,
@@ -22,6 +24,10 @@ export const Route = createFileRoute("/categories/")({
 
 function CategoriesPage() {
   const { t, lang } = useI18n();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
   const { data, isLoading } = useQuery({
     queryKey: ["categories"],
     queryFn: async () => {
@@ -31,6 +37,35 @@ function CategoriesPage() {
     },
   });
 
+  const { data: subscribed } = useQuery({
+    queryKey: ["my-category-subscriptions", user?.id],
+    enabled: Boolean(user),
+    queryFn: async () => {
+      const { data } = await supabase.from("category_subscriptions").select("category_id");
+      return (data ?? []).map((row) => row.category_id);
+    },
+  });
+
+  const goToCourses = (slug: string) => navigate({ to: "/categories/$slug", params: { slug } });
+
+  const subscribe = async (categoryId: string, slug: string) => {
+    if (!user) {
+      toast.error(t("mustLogin"));
+      navigate({ to: "/auth", search: { mode: "login" } });
+      return;
+    }
+    const { error } = await supabase
+      .from("category_subscriptions")
+      .insert({ user_id: user.id, category_id: categoryId });
+    if (error && !error.message.includes("duplicate")) {
+      toast.error(error.message);
+      return;
+    }
+    await queryClient.invalidateQueries({ queryKey: ["my-category-subscriptions"] });
+    toast.success(t("subscribedOk"));
+    goToCourses(slug);
+  };
+
   return (
     <SiteLayout>
       <div className="mx-auto max-w-6xl px-4 py-16">
@@ -39,25 +74,68 @@ function CategoriesPage() {
         {isLoading ? (
           <p className="mt-10 text-muted-foreground">{t("loading")}</p>
         ) : (
-          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-10 grid gap-7 md:grid-cols-2">
             {data?.map((c) => {
-              const Icon = (Icons as unknown as Record<string, Icons.LucideIcon>)[c.icon] ?? Icons.BookOpen;
+              const slug = c.slug?.trim() ? c.slug : c.id;
+              const isSubscribed = subscribed?.includes(c.id);
+              const name = lang === "ar" ? c.name_ar : c.name_en;
+              const specialty = lang === "ar" ? c.description_ar : c.description_en;
               return (
-                <Link
+                <article
                   key={c.id}
-                  to="/categories/$slug"
-                  params={{ slug: c.slug?.trim() ? c.slug : c.id }}
-                  className="group rounded-3xl border border-border bg-card p-7 shadow-soft transition-all hover:-translate-y-1 hover:shadow-lift"
+                  className="relative flex min-h-[280px] overflow-hidden rounded-[2rem] border border-border bg-card shadow-soft transition-all hover:-translate-y-1 hover:shadow-lift"
                 >
-                  <span className="flex size-12 items-center justify-center rounded-2xl bg-hero-gradient text-ink-foreground">
-                    <Icon className="size-6" />
-                  </span>
-                  <h2 className="mt-5 text-xl font-extrabold">{lang === "ar" ? c.name_ar : c.name_en}</h2>
-                  <p className="mt-1.5 text-sm text-muted-foreground">
-                    {lang === "ar" ? c.description_ar : c.description_en}
-                  </p>
-                  <span className="mt-4 inline-block text-sm font-bold text-primary">{t("courses")} →</span>
-                </Link>
+                  <div className="relative z-10 flex w-[58%] flex-col justify-between p-7">
+                    <div>
+                      <span className="flex size-12 items-center justify-center rounded-full bg-hero-gradient text-ink-foreground">
+                        <BookOpen className="size-6" />
+                      </span>
+                      <h2 className="mt-5 text-3xl font-extrabold leading-tight">{name}</h2>
+                      {c.teacher_name && (
+                        <p className="mt-4 flex items-center gap-2 text-lg font-extrabold text-foreground">
+                          <User className="size-5 text-muted-foreground" />
+                          {c.teacher_name}
+                        </p>
+                      )}
+                      {specialty && (
+                        <span className="mt-3 inline-flex items-center gap-2 rounded-xl bg-secondary px-4 py-2 text-sm font-bold text-primary">
+                          <GraduationCap className="size-4" />
+                          {specialty}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="mt-6 border-t border-border pt-5">
+                      <button
+                        onClick={() => (isSubscribed ? goToCourses(slug) : subscribe(c.id, slug))}
+                        className="inline-flex items-center gap-3 rounded-2xl bg-hero-gradient px-7 py-3.5 text-sm font-extrabold text-ink-foreground shadow-soft"
+                      >
+                        {isSubscribed ? t("enterSubject") : t("subscribeNow")}
+                        <ArrowLeft className="size-4 rtl:rotate-0 ltr:rotate-180" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div
+                    className="absolute inset-y-0 left-0 w-[48%] overflow-hidden bg-hero-gradient"
+                    style={{ borderTopRightRadius: "60% 100%", borderBottomRightRadius: "60% 100%" }}
+                  >
+                    {c.teacher_image_url ? (
+                      <img
+                        src={c.teacher_image_url}
+                        alt={c.teacher_name || name}
+                        loading="lazy"
+                        width={600}
+                        height={800}
+                        className="absolute inset-0 size-full object-cover object-top"
+                      />
+                    ) : (
+                      <span className="flex size-full items-center justify-center text-ink-foreground/40">
+                        <User className="size-16" />
+                      </span>
+                    )}
+                  </div>
+                </article>
               );
             })}
           </div>
