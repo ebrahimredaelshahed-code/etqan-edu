@@ -48,6 +48,17 @@ function AccountPage() {
     },
   });
 
+  const { data: subjects } = useQuery({
+    queryKey: ["my-subjects", (courses ?? []).map((c) => c.id).join(",")],
+    enabled: Boolean(courses?.length),
+    queryFn: async () => {
+      const catIds = Array.from(new Set((courses ?? []).map((c) => c.category_id)));
+      const { data } = await supabase.from("categories").select("*").in("id", catIds);
+      return data ?? [];
+    },
+  });
+
+
   return (
     <SiteLayout>
       <div className="mx-auto max-w-5xl px-4 py-14">
