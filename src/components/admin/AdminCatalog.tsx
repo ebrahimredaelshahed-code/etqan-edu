@@ -12,6 +12,9 @@ export function AdminCatalog({ lang }: { lang: "ar" | "en" }) {
 
   const [slug, setSlug] = useState("");
   const [nameAr, setNameAr] = useState("");
+  const [teacher, setTeacher] = useState("");
+  const [teacherImg, setTeacherImg] = useState("");
+  const [specialty, setSpecialty] = useState("");
 
   const [categoryId, setCategoryId] = useState("");
   const [titleAr, setTitleAr] = useState("");
@@ -57,11 +60,18 @@ export function AdminCatalog({ lang }: { lang: "ar" | "en" }) {
         slug: cleanSlug,
         name_ar: nameAr,
         name_en: nameAr,
+        teacher_name: teacher,
+        teacher_image_url: teacherImg,
+        description_ar: specialty,
+        description_en: specialty,
       });
       if (error) throw error;
       toast.success(t("savedOk"));
       setSlug("");
       setNameAr("");
+      setTeacher("");
+      setTeacherImg("");
+      setSpecialty("");
     }, [["admin-categories"]]);
 
   const deleteCategory = (id: string) =>
@@ -108,6 +118,9 @@ export function AdminCatalog({ lang }: { lang: "ar" | "en" }) {
         <div className="mt-5 grid gap-3 sm:grid-cols-3">
           <input value={nameAr} onChange={(e) => setNameAr(e.target.value)} placeholder={t("categoryNameAr")} className={field} />
           <input value={slug} dir="ltr" onChange={(e) => setSlug(e.target.value)} placeholder={t("slug")} className={field} />
+          <input value={teacher} onChange={(e) => setTeacher(e.target.value)} placeholder={t("teacherName")} className={field} />
+          <input value={specialty} onChange={(e) => setSpecialty(e.target.value)} placeholder={t("teacherSpecialty")} className={field} />
+          <input value={teacherImg} dir="ltr" onChange={(e) => setTeacherImg(e.target.value)} placeholder={t("teacherImage")} className={field} />
           <button
             disabled={busy}
             onClick={addCategory}

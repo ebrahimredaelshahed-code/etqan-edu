@@ -48,6 +48,19 @@ function AccountPage() {
     },
   });
 
+  const { data: subjects } = useQuery({
+    queryKey: ["my-subjects", user?.id],
+    enabled: Boolean(user),
+    queryFn: async () => {
+      const { data: subs } = await supabase.from("category_subscriptions").select("category_id");
+      const ids = (subs ?? []).map((s) => s.category_id);
+      if (!ids.length) return [];
+      const { data } = await supabase.from("categories").select("*").in("id", ids);
+      return data ?? [];
+    },
+  });
+
+
   return (
     <SiteLayout>
       <div className="mx-auto max-w-5xl px-4 py-14">
@@ -81,34 +94,77 @@ function AccountPage() {
             <PasswordCard />
           </>
         ) : (
-          <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {!courses?.length ? (
-              <p className="text-muted-foreground">{t("noCourses")}</p>
-            ) : (
-              courses.map((course) => (
-                <Link
-                  key={course.id}
-                  to="/courses/$courseId"
-                  params={{ courseId: course.id }}
-                  className="overflow-hidden rounded-3xl border border-border bg-card shadow-soft transition-transform hover:-translate-y-1"
-                >
-                  <img
-                    src={course.image_url}
-                    alt={lang === "ar" ? course.title_ar : course.title_en}
-                    loading="lazy"
-                    width={1280}
-                    height={720}
-                    className="h-36 w-full object-cover"
-                  />
-                  <div className="p-5">
-                    <h2 className="font-extrabold">{lang === "ar" ? course.title_ar : course.title_en}</h2>
-                    <p className="mt-2 text-sm font-bold text-primary">{t("enterCourse")} →</p>
-                  </div>
-                </Link>
-              ))
-            )}
+          <div className="mt-8 space-y-10">
+            <section>
+              <h2 className="text-xl font-extrabold">{t("mySubjects")}</h2>
+              <div className="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                {!subjects?.length ? (
+                  <p className="text-muted-foreground">{t("noSubjects")}</p>
+                ) : (
+                  subjects.map((subject) => (
+                    <Link
+                      key={subject.id}
+                      to="/categories/$slug"
+                      params={{ slug: subject.slug?.trim() ? subject.slug : subject.id }}
+                      className="flex items-center gap-4 rounded-3xl border border-border bg-card p-5 shadow-soft transition-transform hover:-translate-y-1"
+                    >
+                      {subject.teacher_image_url ? (
+                        <img
+                          src={subject.teacher_image_url}
+                          alt={subject.teacher_name || subject.name_ar}
+                          loading="lazy"
+                          width={96}
+                          height={96}
+                          className="size-14 rounded-2xl object-cover"
+                        />
+                      ) : (
+                        <span className="flex size-14 items-center justify-center rounded-2xl bg-hero-gradient text-ink-foreground">
+                          <BookOpen className="size-6" />
+                        </span>
+                      )}
+                      <div>
+                        <h3 className="font-extrabold">{lang === "ar" ? subject.name_ar : subject.name_en}</h3>
+                        <p className="text-xs text-muted-foreground">{subject.teacher_name || "—"}</p>
+                      </div>
+                    </Link>
+                  ))
+                )}
+              </div>
+            </section>
+
+            <section>
+              <h2 className="text-xl font-extrabold">{t("myCourses")}</h2>
+              <div className="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                {!courses?.length ? (
+                  <p className="text-muted-foreground">{t("noCourses")}</p>
+                ) : (
+                  courses.map((course) => (
+                    <Link
+                      key={course.id}
+                      to="/courses/$courseId"
+                      params={{ courseId: course.id }}
+                      className="overflow-hidden rounded-3xl border border-border bg-card shadow-soft transition-transform hover:-translate-y-1"
+                    >
+                      <img
+                        src={course.image_url}
+                        alt={lang === "ar" ? course.title_ar : course.title_en}
+                        loading="lazy"
+                        width={1280}
+                        height={720}
+                        className="h-36 w-full object-cover"
+                      />
+                      <div className="p-5">
+                        <h3 className="font-extrabold">{lang === "ar" ? course.title_ar : course.title_en}</h3>
+                        <p className="mt-2 text-sm font-bold text-primary">{t("enterCourse")} →</p>
+                      </div>
+                    </Link>
+                  ))
+                )}
+              </div>
+            </section>
           </div>
         )}
+
       </div>
     </SiteLayout>
   );

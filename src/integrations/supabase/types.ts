@@ -25,6 +25,8 @@ export type Database = {
           name_en: string
           slug: string
           sort_order: number
+          teacher_image_url: string
+          teacher_name: string
         }
         Insert: {
           created_at?: string
@@ -36,6 +38,8 @@ export type Database = {
           name_en: string
           slug: string
           sort_order?: number
+          teacher_image_url?: string
+          teacher_name?: string
         }
         Update: {
           created_at?: string
@@ -47,8 +51,39 @@ export type Database = {
           name_en?: string
           slug?: string
           sort_order?: number
+          teacher_image_url?: string
+          teacher_name?: string
         }
         Relationships: []
+      }
+      category_subscriptions: {
+        Row: {
+          category_id: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          category_id: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          category_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "category_subscriptions_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       courses: {
         Row: {
