@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { FolderPlus, GraduationCap, Trash2 } from "lucide-react";
+import { FolderPlus, GraduationCap, ImageUp, Trash2 } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
+import { uploadTeacherImage, useTeacherImageUrl } from "@/lib/teacher-image";
+
 
 export function AdminCatalog({ lang }: { lang: "ar" | "en" }) {
   const { t } = useI18n();
@@ -120,7 +122,14 @@ export function AdminCatalog({ lang }: { lang: "ar" | "en" }) {
           <input value={slug} dir="ltr" onChange={(e) => setSlug(e.target.value)} placeholder={t("slug")} className={field} />
           <input value={teacher} onChange={(e) => setTeacher(e.target.value)} placeholder={t("teacherName")} className={field} />
           <input value={specialty} onChange={(e) => setSpecialty(e.target.value)} placeholder={t("teacherSpecialty")} className={field} />
-          <input value={teacherImg} dir="ltr" onChange={(e) => setTeacherImg(e.target.value)} placeholder={t("teacherImage")} className={field} />
+          <TeacherImageField
+            value={teacherImg}
+            onChange={setTeacherImg}
+            label={t("teacherImage")}
+            uploadingLabel={t("uploading")}
+            className={field}
+          />
+
           <button
             disabled={busy}
             onClick={addCategory}
@@ -198,5 +207,52 @@ export function AdminCatalog({ lang }: { lang: "ar" | "en" }) {
         )}
       </section>
     </div>
+  );
+}
+
+function TeacherImageField({
+  value,
+  onChange,
+  label,
+  uploadingLabel,
+  className,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  label: string;
+  uploadingLabel: string;
+  className: string;
+}) {
+  const [uploading, setUploading] = useState(false);
+  const preview = useTeacherImageUrl(value);
+
+  const pick = async (file: File | undefined) => {
+    if (!file) return;
+    setUploading(true);
+    try {
+      onChange(await uploadTeacherImage(file));
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : String(e));
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <label className={`${className} flex cursor-pointer items-center gap-3`}>
+      {preview ? (
+        <img src={preview} alt={label} className="size-8 shrink-0 rounded-lg object-cover" />
+      ) : (
+        <ImageUp className="size-5 shrink-0 text-primary" />
+      )}
+      <span className="truncate text-muted-foreground">{uploading ? uploadingLabel : label}</span>
+      <input
+        type="file"
+        accept="image/*"
+        className="hidden"
+        disabled={uploading}
+        onChange={(e) => pick(e.target.files?.[0])}
+      />
+    </label>
   );
 }

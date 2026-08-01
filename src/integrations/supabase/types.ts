@@ -342,6 +342,25 @@ export type Database = {
           used_by_name: string
         }[]
       }
+      admin_list_lessons: {
+        Args: { _course_id: string }
+        Returns: {
+          course_id: string
+          created_at: string
+          duration_minutes: number
+          id: string
+          position: number
+          title_ar: string
+          title_en: string
+          video_url: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "lessons"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       generate_codes: {
         Args: { _count: number; _course_id: string }
         Returns: {
@@ -359,6 +378,7 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      get_lesson_video: { Args: { _lesson_id: string }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

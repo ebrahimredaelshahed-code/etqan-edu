@@ -7,6 +7,8 @@ import { SiteLayout } from "@/components/site/SiteLayout";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
+import { TeacherPhoto } from "@/components/site/TeacherPhoto";
+
 
 type Tab = "profile" | "courses";
 
@@ -108,20 +110,15 @@ function AccountPage() {
                       params={{ slug: subject.slug?.trim() ? subject.slug : subject.id }}
                       className="flex items-center gap-4 rounded-3xl border border-border bg-card p-5 shadow-soft transition-transform hover:-translate-y-1"
                     >
-                      {subject.teacher_image_url ? (
-                        <img
-                          src={subject.teacher_image_url}
+                      <span className="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-hero-gradient text-ink-foreground">
+                        <TeacherPhoto
+                          value={subject.teacher_image_url}
                           alt={subject.teacher_name || subject.name_ar}
-                          loading="lazy"
-                          width={96}
-                          height={96}
                           className="size-14 rounded-2xl object-cover"
+                          iconClassName="size-6"
                         />
-                      ) : (
-                        <span className="flex size-14 items-center justify-center rounded-2xl bg-hero-gradient text-ink-foreground">
-                          <BookOpen className="size-6" />
-                        </span>
-                      )}
+                      </span>
+
                       <div>
                         <h3 className="font-extrabold">{lang === "ar" ? subject.name_ar : subject.name_en}</h3>
                         <p className="text-xs text-muted-foreground">{subject.teacher_name || "—"}</p>

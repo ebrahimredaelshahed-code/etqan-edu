@@ -6,6 +6,8 @@ import { SiteLayout } from "@/components/site/SiteLayout";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
+import { TeacherPhoto } from "@/components/site/TeacherPhoto";
+
 
 export const Route = createFileRoute("/categories/")({
   head: () => ({
@@ -120,20 +122,12 @@ function CategoriesPage() {
                     className="absolute inset-y-0 left-0 w-[48%] overflow-hidden bg-hero-gradient"
                     style={{ borderTopRightRadius: "60% 100%", borderBottomRightRadius: "60% 100%" }}
                   >
-                    {c.teacher_image_url ? (
-                      <img
-                        src={c.teacher_image_url}
-                        alt={c.teacher_name || name}
-                        loading="lazy"
-                        width={600}
-                        height={800}
-                        className="absolute inset-0 size-full object-cover object-top"
-                      />
-                    ) : (
-                      <span className="flex size-full items-center justify-center text-ink-foreground/40">
-                        <User className="size-16" />
-                      </span>
-                    )}
+                    <TeacherPhoto
+                      value={c.teacher_image_url}
+                      alt={c.teacher_name || name}
+                      className="absolute inset-0 size-full object-cover object-top"
+                    />
+
                   </div>
                 </article>
               );
