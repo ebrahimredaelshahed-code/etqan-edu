@@ -21,15 +21,12 @@ export function AdminLessons({ courses, lang }: { courses: Course[]; lang: "ar" 
     queryKey: ["admin-lessons", courseId],
     enabled: Boolean(courseId),
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("lessons")
-        .select("*")
-        .eq("course_id", courseId)
-        .order("position");
+      const { data, error } = await supabase.rpc("admin_list_lessons", { _course_id: courseId });
       if (error) throw error;
       return data ?? [];
     },
   });
+
 
   const refresh = () => queryClient.invalidateQueries({ queryKey: ["admin-lessons", courseId] });
 
