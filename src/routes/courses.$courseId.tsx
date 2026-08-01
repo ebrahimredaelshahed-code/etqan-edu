@@ -183,11 +183,10 @@ function LessonPlayer({
   lesson,
   lang,
 }: {
-  lesson: { id: string; title_ar: string; title_en: string; video_url: string };
+  lesson: { id: string; title_ar: string; title_en: string };
   lang: "ar" | "en";
 }) {
   const { t } = useI18n();
-  const youtubeId = youtubeIdOf(lesson.video_url);
   const frameRef = useRef<HTMLDivElement>(null);
   const [isFull, setIsFull] = useState(false);
 
@@ -202,11 +201,19 @@ function LessonPlayer({
     else await frameRef.current?.requestFullscreen?.();
   };
 
-  const { data: src, isLoading } = useQuery({
-    queryKey: ["lesson-video", lesson.id, lesson.video_url],
-    enabled: !youtubeId,
-    queryFn: () => resolveLessonVideoUrl(lesson.video_url),
+  const { data, isLoading } = useQuery({
+    queryKey: ["lesson-video", lesson.id],
+    queryFn: async () => {
+      const { data: videoUrl } = await supabase.rpc("get_lesson_video", { _lesson_id: lesson.id });
+      const id = youtubeIdOf(videoUrl as string | null);
+      if (id) return { youtubeId: id, src: null as string | null };
+      return { youtubeId: null, src: await resolveLessonVideoUrl(videoUrl as string | null) };
+    },
   });
+
+  const youtubeId = data?.youtubeId ?? null;
+  const src = data?.src ?? null;
+
 
   return (
     <section className="overflow-hidden rounded-3xl border border-border bg-ink p-3 shadow-lift">
