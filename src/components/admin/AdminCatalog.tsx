@@ -209,3 +209,50 @@ export function AdminCatalog({ lang }: { lang: "ar" | "en" }) {
     </div>
   );
 }
+
+function TeacherImageField({
+  value,
+  onChange,
+  label,
+  uploadingLabel,
+  className,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  label: string;
+  uploadingLabel: string;
+  className: string;
+}) {
+  const [uploading, setUploading] = useState(false);
+  const preview = useTeacherImageUrl(value);
+
+  const pick = async (file: File | undefined) => {
+    if (!file) return;
+    setUploading(true);
+    try {
+      onChange(await uploadTeacherImage(file));
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : String(e));
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <label className={`${className} flex cursor-pointer items-center gap-3`}>
+      {preview ? (
+        <img src={preview} alt={label} className="size-8 shrink-0 rounded-lg object-cover" />
+      ) : (
+        <ImageUp className="size-5 shrink-0 text-primary" />
+      )}
+      <span className="truncate text-muted-foreground">{uploading ? uploadingLabel : label}</span>
+      <input
+        type="file"
+        accept="image/*"
+        className="hidden"
+        disabled={uploading}
+        onChange={(e) => pick(e.target.files?.[0])}
+      />
+    </label>
+  );
+}
