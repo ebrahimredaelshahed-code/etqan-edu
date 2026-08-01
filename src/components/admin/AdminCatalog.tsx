@@ -122,7 +122,14 @@ export function AdminCatalog({ lang }: { lang: "ar" | "en" }) {
           <input value={slug} dir="ltr" onChange={(e) => setSlug(e.target.value)} placeholder={t("slug")} className={field} />
           <input value={teacher} onChange={(e) => setTeacher(e.target.value)} placeholder={t("teacherName")} className={field} />
           <input value={specialty} onChange={(e) => setSpecialty(e.target.value)} placeholder={t("teacherSpecialty")} className={field} />
-          <input value={teacherImg} dir="ltr" onChange={(e) => setTeacherImg(e.target.value)} placeholder={t("teacherImage")} className={field} />
+          <TeacherImageField
+            value={teacherImg}
+            onChange={setTeacherImg}
+            label={t("teacherImage")}
+            uploadingLabel={t("uploading")}
+            className={field}
+          />
+
           <button
             disabled={busy}
             onClick={addCategory}
