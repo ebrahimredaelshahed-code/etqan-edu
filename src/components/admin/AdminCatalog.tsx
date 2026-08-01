@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { FolderPlus, GraduationCap, Trash2 } from "lucide-react";
+import { FolderPlus, GraduationCap, ImageUp, Trash2 } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
+import { uploadTeacherImage, useTeacherImageUrl } from "@/lib/teacher-image";
+
 
 export function AdminCatalog({ lang }: { lang: "ar" | "en" }) {
   const { t } = useI18n();
