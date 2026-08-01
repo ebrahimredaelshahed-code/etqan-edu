@@ -7,6 +7,8 @@ import { SiteLayout } from "@/components/site/SiteLayout";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
+import { TeacherPhoto } from "@/components/site/TeacherPhoto";
+
 
 type Tab = "profile" | "courses";
 
