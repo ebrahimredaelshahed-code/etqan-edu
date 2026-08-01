@@ -39,7 +39,12 @@ function CoursePlayer() {
     queryFn: async () => {
       const [{ data: course }, { data: lessons }, { data: enrollment }, { data: progress }] = await Promise.all([
         supabase.from("courses").select("*").eq("id", courseId).maybeSingle(),
-        supabase.from("lessons").select("*").eq("course_id", courseId).order("position"),
+        supabase
+          .from("lessons")
+          .select("id, course_id, title_ar, title_en, duration_minutes, position")
+          .eq("course_id", courseId)
+          .order("position"),
+
         supabase.from("enrollments").select("id").eq("course_id", courseId).maybeSingle(),
         supabase.from("lesson_progress").select("lesson_id").eq("course_id", courseId),
       ]);
