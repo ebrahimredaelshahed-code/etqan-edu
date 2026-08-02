@@ -80,3 +80,56 @@ export const updateAdminCredentials = createServerFn({ method: "POST" })
     }
     return { ok: true };
   });
+
+export const listPlatformUsers = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context.supabase as never, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const [{ data: profiles }, { data: roles }, { data: subs }, { data: enrolls }, { data: cats }, { data: courses }] =
+      await Promise.all([
+        supabaseAdmin.from("profiles").select("id, full_name, phone, guardian_phone, password_plain, created_at"),
+        supabaseAdmin.from("user_roles").select("user_id, role"),
+        supabaseAdmin.from("category_subscriptions").select("user_id, category_id"),
+        supabaseAdmin.from("enrollments").select("user_id, course_id"),
+        supabaseAdmin.from("categories").select("id, name_ar"),
+        supabaseAdmin.from("courses").select("id, title_ar"),
+      ]);
+    const catName = new Map((cats ?? []).map((c) => [c.id, c.name_ar]));
+    const courseName = new Map((courses ?? []).map((c) => [c.id, c.title_ar]));
+    const adminIds = new Set((roles ?? []).filter((r) => r.role === "admin").map((r) => r.user_id));
+    return (profiles ?? []).map((p) => ({
+      id: p.id,
+      fullName: p.full_name ?? "",
+      phone: p.phone ?? "",
+      guardianPhone: p.guardian_phone ?? "",
+      password: p.password_plain ?? "",
+      isAdmin: adminIds.has(p.id),
+      createdAt: p.created_at,
+      categories: (subs ?? [])
+        .filter((s) => s.user_id === p.id)
+        .map((s) => catName.get(s.category_id) ?? "")
+        .filter(Boolean),
+      courses: (enrolls ?? [])
+        .filter((e) => e.user_id === p.id)
+        .map((e) => courseName.get(e.course_id) ?? "")
+        .filter(Boolean),
+    }));
+  });
+
+export const deletePlatformUser = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) => z.object({ userId: z.string().uuid() }).parse(data))
+  .handler(async ({ context, data }) => {
+    await assertAdmin(context.supabase as never, context.userId);
+    if (data.userId === context.userId) throw new Error("cannot_delete_self");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    await supabaseAdmin.from("category_subscriptions").delete().eq("user_id", data.userId);
+    await supabaseAdmin.from("lesson_progress").delete().eq("user_id", data.userId);
+    await supabaseAdmin.from("enrollments").delete().eq("user_id", data.userId);
+    await supabaseAdmin.from("user_roles").delete().eq("user_id", data.userId);
+    await supabaseAdmin.from("profiles").delete().eq("id", data.userId);
+    const { error } = await supabaseAdmin.auth.admin.deleteUser(data.userId);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
