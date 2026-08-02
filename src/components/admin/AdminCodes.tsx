@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Copy, KeyRound } from "lucide-react";
+import { Copy, KeyRound, Trash2 } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -52,6 +52,18 @@ export function AdminCodes({
       return;
     }
     toast.success(t("codeSuccess"));
+    await queryClient.invalidateQueries({ queryKey: ["admin-codes"] });
+  };
+
+  const deleteCode = async (id: string) => {
+    setBusy(true);
+    const { error } = await supabase.from("subscription_codes").delete().eq("id", id);
+    setBusy(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success(t("deletedOk"));
     await queryClient.invalidateQueries({ queryKey: ["admin-codes"] });
   };
 
@@ -113,6 +125,7 @@ export function AdminCodes({
               <th className="p-4 text-start">{t("code")}</th>
               <th className="p-4 text-start">{t("course")}</th>
               <th className="p-4 text-start">{t("status")}</th>
+              <th className="p-4 text-start">{t("deleteLabel")}</th>
             </tr>
           </thead>
           <tbody>
@@ -140,6 +153,16 @@ export function AdminCodes({
                       {t("available")}
                     </span>
                   )}
+                </td>
+                <td className="p-4">
+                  <button
+                    disabled={busy}
+                    onClick={() => deleteCode(c.id)}
+                    aria-label={t("deleteCode")}
+                    className="rounded-full bg-destructive/10 p-2 text-destructive disabled:opacity-60"
+                  >
+                    <Trash2 className="size-4" />
+                  </button>
                 </td>
               </tr>
             ))}

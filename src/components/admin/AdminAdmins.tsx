@@ -18,7 +18,15 @@ export function AdminAdmins() {
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
 
-  const { data: admins } = useQuery({ queryKey: ["admin-admins"], queryFn: () => fetchAdmins({}) });
+  const { data: admins } = useQuery({
+    queryKey: ["admin-admins"],
+    queryFn: () => fetchAdmins({}),
+    staleTime: 60_000,
+    gcTime: 30 * 60_000,
+    retry: 3,
+    refetchOnWindowFocus: false,
+    placeholderData: (previous) => previous,
+  });
 
   const field = "rounded-2xl border border-border bg-background px-4 py-3 text-sm";
 

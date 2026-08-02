@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Clock, KeyRound, PlayCircle, Tag, X } from "lucide-react";
 import { toast } from "sonner";
+import { StoredImage } from "@/components/site/StoredImage";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
@@ -120,10 +121,9 @@ function CategoryCourses() {
               key={course.id}
               className="overflow-hidden rounded-3xl border border-border bg-card shadow-soft transition-all hover:-translate-y-1 hover:shadow-lift"
             >
-              <img
-                src={course.image_url}
+              <StoredImage
+                value={course.image_url}
                 alt={lang === "ar" ? course.title_ar : course.title_en}
-                loading="lazy"
                 width={1280}
                 height={720}
                 className="h-44 w-full object-cover"

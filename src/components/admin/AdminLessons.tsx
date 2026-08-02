@@ -6,11 +6,13 @@ import { useI18n } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import { youtubeIdOf } from "@/lib/lesson-video";
 
-type Course = { id: string; title_ar: string; title_en: string };
+type Course = { id: string; category_id: string; title_ar: string; title_en: string };
+type Category = { id: string; name_ar: string; name_en: string };
 
-export function AdminLessons({ courses, lang }: { courses: Course[]; lang: "ar" | "en" }) {
+export function AdminLessons({ categories, courses, lang }: { categories: Category[]; courses: Course[]; lang: "ar" | "en" }) {
   const { t } = useI18n();
   const queryClient = useQueryClient();
+  const [categoryId, setCategoryId] = useState("");
   const [courseId, setCourseId] = useState("");
   const [titleAr, setTitleAr] = useState("");
   const [minutes, setMinutes] = useState(10);
@@ -106,12 +108,28 @@ export function AdminLessons({ courses, lang }: { courses: Course[]; lang: "ar" 
 
       <div className="mt-5 grid gap-3 sm:grid-cols-2">
         <select
-          value={courseId}
-          onChange={(e) => setCourseId(e.target.value)}
+          value={categoryId}
+          onChange={(e) => {
+            setCategoryId(e.target.value);
+            setCourseId("");
+          }}
           className="rounded-2xl border border-border bg-background px-4 py-3 text-sm sm:col-span-2"
         >
+          <option value="">{t("selectCategory")}</option>
+          {categories.map((c) => (
+            <option key={c.id} value={c.id}>
+              {lang === "ar" ? c.name_ar : c.name_en}
+            </option>
+          ))}
+        </select>
+        <select
+          value={courseId}
+          disabled={!categoryId}
+          onChange={(e) => setCourseId(e.target.value)}
+          className="rounded-2xl border border-border bg-background px-4 py-3 text-sm sm:col-span-2 disabled:opacity-60"
+        >
           <option value="">{t("course")}</option>
-          {courses.map((c) => (
+          {courses.filter((c) => c.category_id === categoryId).map((c) => (
             <option key={c.id} value={c.id}>
               {lang === "ar" ? c.title_ar : c.title_en}
             </option>

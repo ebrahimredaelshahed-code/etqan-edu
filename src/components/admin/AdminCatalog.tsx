@@ -177,7 +177,13 @@ export function AdminCatalog({ lang }: { lang: "ar" | "en" }) {
           <input type="number" min={0} value={price} onChange={(e) => setPrice(Number(e.target.value))} placeholder={t("coursePrice")} className={field} />
           <input type="number" min={0} value={hours} onChange={(e) => setHours(Number(e.target.value))} placeholder={t("courseDuration")} className={field} />
           <input value={instructor} onChange={(e) => setInstructor(e.target.value)} placeholder={t("courseInstructor")} className={field} />
-          <input value={image} dir="ltr" onChange={(e) => setImage(e.target.value)} placeholder={t("courseImage")} className={field} />
+          <TeacherImageField
+            value={image}
+            onChange={setImage}
+            label={t("courseImageUpload")}
+            uploadingLabel={t("uploading")}
+            className={field}
+          />
           <button
             disabled={busy}
             onClick={addCourse}
