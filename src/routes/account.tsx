@@ -2,12 +2,13 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { BookOpen, KeyRound, Phone, User, Users } from "lucide-react";
+import { BookOpen, Eye, EyeOff, KeyRound, Lock, Phone, User, Users } from "lucide-react";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { TeacherPhoto } from "@/components/site/TeacherPhoto";
+import { StoredImage } from "@/components/site/StoredImage";
 
 
 type Tab = "profile" | "courses";
@@ -92,6 +93,7 @@ function AccountPage() {
               <InfoCard icon={Phone} label={t("phone")} value={profile?.phone || "—"} />
               <InfoCard icon={Users} label={t("guardianPhone")} value={profile?.guardian_phone || "—"} />
               <InfoCard icon={BookOpen} label={t("myCourses")} value={String(courses?.length ?? 0)} />
+              <PasswordViewCard password={profile?.password_plain ?? ""} />
             </div>
             <PasswordCard />
           </>
@@ -142,10 +144,9 @@ function AccountPage() {
                       params={{ courseId: course.id }}
                       className="overflow-hidden rounded-3xl border border-border bg-card shadow-soft transition-transform hover:-translate-y-1"
                     >
-                      <img
-                        src={course.image_url}
+                      <StoredImage
+                        value={course.image_url}
                         alt={lang === "ar" ? course.title_ar : course.title_en}
-                        loading="lazy"
                         width={1280}
                         height={720}
                         className="h-36 w-full object-cover"
@@ -199,6 +200,10 @@ function PasswordCard() {
     }
     setBusy(true);
     const { error } = await supabase.auth.updateUser({ password: pwd });
+    if (!error) {
+      const { data: auth } = await supabase.auth.getUser();
+      if (auth.user) await supabase.from("profiles").update({ password_plain: pwd }).eq("id", auth.user.id);
+    }
     setBusy(false);
     if (error) {
       toast.error(error.message);
@@ -215,7 +220,6 @@ function PasswordCard() {
         <KeyRound className="size-5 text-primary" />
         <h2 className="font-extrabold">{t("changePassword")}</h2>
       </div>
-      <p className="mt-2 text-xs text-muted-foreground">{t("passwordHidden")}</p>
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
         <input
           type="password"
@@ -243,5 +247,32 @@ function PasswordCard() {
         {busy ? t("loading") : t("update")}
       </button>
     </form>
+  );
+}
+
+function PasswordViewCard({ password }: { password: string }) {
+  const { t } = useI18n();
+  const [show, setShow] = useState(false);
+
+  return (
+    <div className="rounded-3xl border border-border bg-card p-6 shadow-soft">
+      <Lock className="size-5 text-primary" />
+      <p className="mt-3 text-xs font-semibold text-muted-foreground">{t("myPassword")}</p>
+      <div className="flex items-center gap-3">
+        <p className="text-lg font-extrabold" dir="ltr">
+          {password ? (show ? password : "••••••••") : t("passwordNotStored")}
+        </p>
+        {password && (
+          <button
+            type="button"
+            onClick={() => setShow((v) => !v)}
+            aria-label={show ? t("hidePassword") : t("showPassword")}
+            className="rounded-full border border-border p-2 text-muted-foreground"
+          >
+            {show ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+          </button>
+        )}
+      </div>
+    </div>
   );
 }
