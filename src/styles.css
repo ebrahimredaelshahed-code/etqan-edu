@@ -143,3 +143,18 @@
 @utility shadow-lift {
   box-shadow: var(--shadow-lift);
 }
+
+@keyframes marquee-rtl {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(50%);
+  }
+}
+
+@layer components {
+  .marquee-track {
+    animation: marquee-rtl 30s linear infinite;
+  }
+}

@@ -2,15 +2,12 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import {
   ArrowLeft,
-  BookOpen,
-  GraduationCap,
-  Users,
   Sparkles,
-  Smile,
   ShieldCheck,
   PlayCircle,
   Trophy,
 } from "lucide-react";
+
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { useI18n } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
@@ -53,27 +50,8 @@ function Index() {
     },
   });
 
-  const { data: stats } = useQuery({
-    queryKey: ["home-stats"],
-    queryFn: async () => {
-      const [courses, categories] = await Promise.all([
-        supabase.from("courses").select("id, duration_hours"),
-        supabase.from("categories").select("id"),
-      ]);
-      return {
-        courses: courses.data?.length ?? 0,
-        teachers: categories.data?.length ?? 0,
-        hours: Math.round(courses.data?.reduce((a, c) => a + Number(c.duration_hours), 0) ?? 0),
-      };
-    },
-  });
 
-  const statCards = [
-    { label: t("statTeachers"), value: `${stats?.teachers ?? 0}+`, icon: GraduationCap },
-    { label: t("statSubjects"), value: `${stats?.courses ?? 0}+`, icon: BookOpen },
-    { label: t("statStudents"), value: "1,200+", icon: Users },
-    { label: t("stat4"), value: "98%", icon: Smile },
-  ];
+
 
   const aboutPoints = [
     { icon: PlayCircle, title: t("aboutPoint1"), text: t("aboutPoint1Text") },
@@ -124,51 +102,35 @@ function Index() {
           </Link>
         </div>
 
-        <div className="mt-8 flex snap-x gap-5 overflow-x-auto pb-4">
-          {(teachers ?? []).map((c) => (
-            <Link
-              key={c.id}
-              to="/categories/$slug"
-              params={{ slug: c.slug?.trim() ? c.slug : c.id }}
-              className="group w-[240px] shrink-0 snap-start overflow-hidden rounded-3xl border border-border bg-card shadow-soft transition-all hover:-translate-y-1 hover:shadow-lift"
-            >
-              <div className="relative h-[220px] overflow-hidden bg-hero-gradient">
-                <TeacherPhoto
-                  value={c.teacher_image_url}
-                  alt={c.teacher_name || c.name_ar}
-                  className="absolute inset-0 size-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
-                />
+        <div className="marquee mt-8 overflow-hidden">
+          <div className="marquee-track flex w-max gap-5">
+            {[...(teachers ?? []), ...(teachers ?? [])].map((c, i) => (
+              <div
+                key={`${c.id}-${i}`}
+                aria-hidden={i >= (teachers?.length ?? 0)}
+                className="pointer-events-none w-[240px] shrink-0 select-none overflow-hidden rounded-3xl border border-border bg-card shadow-soft"
+              >
+                <div className="relative h-[220px] overflow-hidden bg-hero-gradient">
+                  <TeacherPhoto
+                    value={c.teacher_image_url}
+                    alt={c.teacher_name || c.name_ar}
+                    className="absolute inset-0 size-full object-cover object-top"
+                  />
+                </div>
+                <div className="space-y-1 p-5">
+                  <p className="text-lg font-extrabold">{c.teacher_name || c.name_ar}</p>
+                  <p className="text-sm font-semibold text-primary">{c.name_ar}</p>
+                  {c.description_ar && (
+                    <p className="line-clamp-1 text-xs text-muted-foreground">{c.description_ar}</p>
+                  )}
+                </div>
               </div>
-              <div className="space-y-1 p-5">
-                <p className="text-lg font-extrabold">{c.teacher_name || c.name_ar}</p>
-                <p className="text-sm font-semibold text-primary">{c.name_ar}</p>
-                {c.description_ar && (
-                  <p className="line-clamp-1 text-xs text-muted-foreground">{c.description_ar}</p>
-                )}
-              </div>
-            </Link>
-          ))}
+            ))}
+          </div>
           {!teachers?.length && <p className="text-muted-foreground">{t("loading")}</p>}
         </div>
       </section>
 
-      {/* Stats */}
-      <section className="mx-auto max-w-6xl px-4 pb-16">
-        <div className="grid gap-4 rounded-[2rem] bg-hero-gradient p-6 text-ink-foreground shadow-lift sm:grid-cols-2 sm:p-8 lg:grid-cols-4">
-          {statCards.map((s) => (
-            <div
-              key={s.label}
-              className="rounded-2xl border border-white/15 bg-white/10 p-6 text-center backdrop-blur-sm transition-transform hover:-translate-y-1"
-            >
-              <span className="mx-auto flex size-12 items-center justify-center rounded-full bg-accent-gradient text-accent-foreground">
-                <s.icon className="size-6" />
-              </span>
-              <p className="mt-4 text-3xl font-extrabold">{s.value}</p>
-              <p className="mt-1 text-sm opacity-80">{s.label}</p>
-            </div>
-          ))}
-        </div>
-      </section>
 
       {/* About */}
       <section className="mx-auto max-w-6xl px-4 pb-24">
