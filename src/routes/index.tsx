@@ -53,27 +53,8 @@ function Index() {
     },
   });
 
-  const { data: stats } = useQuery({
-    queryKey: ["home-stats"],
-    queryFn: async () => {
-      const [courses, categories] = await Promise.all([
-        supabase.from("courses").select("id, duration_hours"),
-        supabase.from("categories").select("id"),
-      ]);
-      return {
-        courses: courses.data?.length ?? 0,
-        teachers: categories.data?.length ?? 0,
-        hours: Math.round(courses.data?.reduce((a, c) => a + Number(c.duration_hours), 0) ?? 0),
-      };
-    },
-  });
 
-  const statCards = [
-    { label: t("statTeachers"), value: `${stats?.teachers ?? 0}+`, icon: GraduationCap },
-    { label: t("statSubjects"), value: `${stats?.courses ?? 0}+`, icon: BookOpen },
-    { label: t("statStudents"), value: "1,200+", icon: Users },
-    { label: t("stat4"), value: "98%", icon: Smile },
-  ];
+
 
   const aboutPoints = [
     { icon: PlayCircle, title: t("aboutPoint1"), text: t("aboutPoint1Text") },
