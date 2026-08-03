@@ -162,7 +162,20 @@ const dict = {
     passwordNotStored: "غير متاحة، يرجى تغييرها لتظهر هنا",
     deleteCode: "حذف الكود",
     courseImageUpload: "استيراد صورة الدورة",
+    leadTitle: "نقودك للتميز",
+    leadSubtitle: "نخبة من المعلمين المتخصصين في مكانٍ واحد",
+    statTeachers: "معلم متخصص",
+    statSubjects: "مادة دراسية",
+    statStudents: "طالب مشترك",
+    aboutHeadline: "تعليم منظّم، وشرح واضح، ومتابعة لحظية لتقدمك",
+    aboutPoint1: "دروس فيديو عالية الجودة",
+    aboutPoint1Text: "مشغل فيديو خاص بالمنصة بجودة عالية ومتابعة سهلة لكل درس.",
+    aboutPoint2: "اشتراك آمن بالأكواد",
+    aboutPoint2Text: "كود اشتراك مخصص لكل طالب ومادة، لا يعمل إلا مرة واحدة.",
+    aboutPoint3: "متابعة نسبة الإنجاز",
+    aboutPoint3Text: "تعرف على ما أنجزته وما تبقى لك في كل مادة بشكل لحظي.",
     lang: "English",
+
 
   },
   en: {
@@ -323,7 +336,20 @@ const dict = {
     passwordNotStored: "Not available, change it to show here",
     deleteCode: "Delete code",
     courseImageUpload: "Upload course image",
+    leadTitle: "We lead you to excellence",
+    leadSubtitle: "A selection of specialist teachers in one place",
+    statTeachers: "Specialist teachers",
+    statSubjects: "Subjects",
+    statStudents: "Enrolled students",
+    aboutHeadline: "Structured learning, clear teaching, live progress tracking",
+    aboutPoint1: "High quality video lessons",
+    aboutPoint1Text: "A platform-native player with HD quality and easy lesson navigation.",
+    aboutPoint2: "Secure code-based access",
+    aboutPoint2Text: "Each code works once, for one student and one subject.",
+    aboutPoint3: "Progress tracking",
+    aboutPoint3Text: "See what you finished and what is left in every subject.",
     lang: "العربية",
+
 
   },
 } as const;
