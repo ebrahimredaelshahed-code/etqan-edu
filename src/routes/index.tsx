@@ -2,15 +2,12 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import {
   ArrowLeft,
-  BookOpen,
-  GraduationCap,
-  Users,
   Sparkles,
-  Smile,
   ShieldCheck,
   PlayCircle,
   Trophy,
 } from "lucide-react";
+
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { useI18n } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
