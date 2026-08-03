@@ -162,7 +162,20 @@ const dict = {
     passwordNotStored: "غير متاحة، يرجى تغييرها لتظهر هنا",
     deleteCode: "حذف الكود",
     courseImageUpload: "استيراد صورة الدورة",
+    leadTitle: "نقودك للتميز",
+    leadSubtitle: "نخبة من المعلمين المتخصصين في مكانٍ واحد",
+    statTeachers: "معلم متخصص",
+    statSubjects: "مادة دراسية",
+    statStudents: "طالب مشترك",
+    aboutHeadline: "تعليم منظّم، وشرح واضح، ومتابعة لحظية لتقدمك",
+    aboutPoint1: "دروس فيديو عالية الجودة",
+    aboutPoint1Text: "مشغل فيديو خاص بالمنصة بجودة عالية ومتابعة سهلة لكل درس.",
+    aboutPoint2: "اشتراك آمن بالأكواد",
+    aboutPoint2Text: "كود اشتراك مخصص لكل طالب ومادة، لا يعمل إلا مرة واحدة.",
+    aboutPoint3: "متابعة نسبة الإنجاز",
+    aboutPoint3Text: "تعرف على ما أنجزته وما تبقى لك في كل مادة بشكل لحظي.",
     lang: "English",
+
 
   },
   en: {
