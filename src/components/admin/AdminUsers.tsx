@@ -2,9 +2,9 @@ import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { Download, Eye, EyeOff, Trash2, Users } from "lucide-react";
+import { Download, Eye, EyeOff, Trash2, Users, X } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
-import { deletePlatformUser, listPlatformUsers } from "@/lib/admin.functions";
+import { deletePlatformUser, getPlatformUserDetail, listPlatformUsers } from "@/lib/admin.functions";
 
 type Category = { id: string; name_ar: string; name_en: string };
 type Course = { id: string; category_id: string; title_ar: string; title_en: string };
@@ -18,8 +18,8 @@ export function AdminUsers({ categories, courses }: { categories: Category[]; co
   const [search, setSearch] = useState("");
   const [categoryName, setCategoryName] = useState("");
   const [courseName, setCourseName] = useState("");
-  const [showPasswords, setShowPasswords] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [openUser, setOpenUser] = useState<string | null>(null);
 
   const { data: users } = useQuery({
     queryKey: ["admin-users"],
@@ -74,6 +74,7 @@ export function AdminUsers({ categories, courses }: { categories: Category[]; co
     try {
       await removeUser({ data: { userId: id } });
       toast.success(t("deletedOk"));
+      setOpenUser(null);
       await queryClient.invalidateQueries({ queryKey: ["admin-users"] });
     } catch (e) {
       toast.error(e instanceof Error ? e.message : String(e));
@@ -108,58 +109,37 @@ export function AdminUsers({ categories, courses }: { categories: Category[]; co
             </option>
           ))}
         </select>
-        <div className="flex gap-2">
-          <button
-            onClick={() => setShowPasswords((v) => !v)}
-            className="flex flex-1 items-center justify-center gap-2 rounded-2xl border border-border px-4 py-3 text-xs font-bold"
-          >
-            {showPasswords ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-            {showPasswords ? t("hidePassword") : t("showPassword")}
-          </button>
-          <button
-            onClick={exportExcel}
-            className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-3 text-xs font-extrabold text-primary-foreground"
-          >
-            <Download className="size-4" /> {t("exportExcel")}
-          </button>
-        </div>
+        <button
+          onClick={exportExcel}
+          className="flex items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-3 text-xs font-extrabold text-primary-foreground"
+        >
+          <Download className="size-4" /> {t("exportExcel")}
+        </button>
       </div>
 
-      <div className="mt-6 overflow-x-auto rounded-2xl border border-border">
-        <table className="w-full min-w-[860px] text-start text-sm">
+      <div className="mt-6 overflow-hidden rounded-2xl border border-border">
+        <table className="w-full text-start text-sm">
           <thead className="bg-secondary text-secondary-foreground">
             <tr>
               <th className="p-3 text-start">{t("fullName")}</th>
-              <th className="p-3 text-start">{t("phone")}</th>
-              <th className="p-3 text-start">{t("guardianPhone")}</th>
-              <th className="p-3 text-start">{t("password")}</th>
-              <th className="p-3 text-start">{t("subscribedCategories")}</th>
-              <th className="p-3 text-start">{t("subscribedCourses")}</th>
               <th className="p-3 text-start">{t("deleteLabel")}</th>
             </tr>
           </thead>
           <tbody>
             {rows.length === 0 && (
               <tr>
-                <td colSpan={7} className="p-4 text-muted-foreground">
+                <td colSpan={2} className="p-4 text-muted-foreground">
                   {t("noItems")}
                 </td>
               </tr>
             )}
             {rows.map((u) => (
-              <tr key={u.id} className="border-t border-border align-top">
-                <td className="p-3 font-bold">{u.fullName || "—"}</td>
-                <td className="p-3" dir="ltr">
-                  {u.phone || "—"}
+              <tr key={u.id} className="border-t border-border">
+                <td className="p-3">
+                  <button onClick={() => setOpenUser(u.id)} className="font-bold text-primary hover:underline">
+                    {u.fullName || u.phone || "—"}
+                  </button>
                 </td>
-                <td className="p-3" dir="ltr">
-                  {u.guardianPhone || "—"}
-                </td>
-                <td className="p-3 font-mono" dir="ltr">
-                  {u.password ? (showPasswords ? u.password : "••••••••") : "—"}
-                </td>
-                <td className="p-3">{u.categories.join("، ") || "—"}</td>
-                <td className="p-3">{u.courses.join("، ") || "—"}</td>
                 <td className="p-3">
                   <button
                     disabled={busy}
@@ -175,6 +155,131 @@ export function AdminUsers({ categories, courses }: { categories: Category[]; co
           </tbody>
         </table>
       </div>
+
+      {openUser && <UserDialog userId={openUser} onClose={() => setOpenUser(null)} />}
     </section>
+  );
+}
+
+function UserDialog({ userId, onClose }: { userId: string; onClose: () => void }) {
+  const { t } = useI18n();
+  const fetchDetail = useServerFn(getPlatformUserDetail);
+  const [showPassword, setShowPassword] = useState(false);
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["admin-user-detail", userId],
+    queryFn: () => fetchDetail({ data: { userId } }),
+    refetchInterval: 20_000,
+  });
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+      role="dialog"
+      aria-modal="true"
+      onClick={onClose}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-3xl border border-border bg-card p-7 shadow-lift"
+      >
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-extrabold">{t("userDetails")}</h3>
+          <button onClick={onClose} aria-label={t("close")} className="rounded-full bg-secondary p-2">
+            <X className="size-4" />
+          </button>
+        </div>
+
+        {isLoading || !data ? (
+          <p className="mt-6 text-sm text-muted-foreground">{t("loading")}</p>
+        ) : (
+          <div className="mt-6 space-y-6">
+            <dl className="grid gap-3 sm:grid-cols-2">
+              <Info label={t("fullName")} value={data.fullName || "—"} />
+              <Info label={t("phone")} value={data.phone || "—"} ltr />
+              <Info label={t("guardianPhone")} value={data.guardianPhone || "—"} ltr />
+              <div className="rounded-2xl border border-border p-4">
+                <dt className="text-xs font-bold text-muted-foreground">{t("password")}</dt>
+                <dd className="mt-1 flex items-center gap-2 font-mono text-sm" dir="ltr">
+                  {data.password ? (showPassword ? data.password : "••••••••") : "—"}
+                  {data.password && (
+                    <button
+                      onClick={() => setShowPassword((v) => !v)}
+                      aria-label={showPassword ? t("hidePassword") : t("showPassword")}
+                      className="text-primary"
+                    >
+                      {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                    </button>
+                  )}
+                </dd>
+              </div>
+            </dl>
+
+            <div>
+              <h4 className="text-sm font-extrabold">{t("subscribedCategories")}</h4>
+              <p className="mt-1 text-sm text-muted-foreground">{data.categories.join("، ") || "—"}</p>
+            </div>
+
+            <div>
+              <h4 className="text-sm font-extrabold">{t("progressInCourses")}</h4>
+              <div className="mt-2 space-y-2">
+                {data.courses.length === 0 && <p className="text-sm text-muted-foreground">{t("noCourses")}</p>}
+                {data.courses.map((c) => (
+                  <div key={c.id} className="rounded-2xl border border-border p-4">
+                    <div className="flex items-center justify-between text-sm font-bold">
+                      <span>
+                        {c.title}
+                        {c.category && <span className="ms-2 text-xs text-muted-foreground">({c.category})</span>}
+                      </span>
+                      <span className="text-primary">
+                        {c.completed}/{c.total} — {c.percent}%
+                      </span>
+                    </div>
+                    <div className="mt-2 h-2 overflow-hidden rounded-full bg-secondary">
+                      <div className="h-full rounded-full bg-accent-gradient" style={{ width: `${c.percent}%` }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <h4 className="text-sm font-extrabold">{t("quizResults")}</h4>
+              <div className="mt-2 space-y-2">
+                {data.attempts.length === 0 && <p className="text-sm text-muted-foreground">{t("noAttempts")}</p>}
+                {data.attempts.map((a) => (
+                  <div
+                    key={a.id}
+                    className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-border p-4 text-sm"
+                  >
+                    <span className="font-bold">
+                      {a.quiz}
+                      <span className="ms-2 text-xs font-normal text-muted-foreground">{a.course}</span>
+                    </span>
+                    <span className="font-extrabold text-primary">
+                      {a.score}/{a.maxScore}
+                      {a.hasEssay && (
+                        <span className="ms-2 text-xs font-normal text-muted-foreground">{t("essayPending")}</span>
+                      )}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function Info({ label, value, ltr }: { label: string; value: string; ltr?: boolean }) {
+  return (
+    <div className="rounded-2xl border border-border p-4">
+      <dt className="text-xs font-bold text-muted-foreground">{label}</dt>
+      <dd className="mt-1 text-sm font-bold" dir={ltr ? "ltr" : undefined}>
+        {value}
+      </dd>
+    </div>
   );
 }

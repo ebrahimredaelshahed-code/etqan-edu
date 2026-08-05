@@ -54,9 +54,9 @@ function Index() {
 
 
   const aboutPoints = [
-    { icon: PlayCircle, title: t("aboutPoint1"), text: t("aboutPoint1Text") },
-    { icon: ShieldCheck, title: t("aboutPoint2"), text: t("aboutPoint2Text") },
-    { icon: Trophy, title: t("aboutPoint3"), text: t("aboutPoint3Text") },
+    { icon: PlayCircle, title: t("aboutPoint1") },
+    { icon: ShieldCheck, title: t("aboutPoint2") },
+    { icon: Trophy, title: t("aboutPoint3") },
   ];
 
   return (
@@ -155,15 +155,12 @@ function Index() {
               {aboutPoints.map((p) => (
                 <li
                   key={p.title}
-                  className="flex items-start gap-4 rounded-2xl border border-border bg-secondary/60 p-5"
+                  className="flex items-center gap-4 rounded-2xl border border-border bg-secondary/60 p-5"
                 >
                   <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-accent-gradient text-accent-foreground">
                     <p.icon className="size-5" />
                   </span>
-                  <div>
-                    <p className="font-extrabold">{p.title}</p>
-                    <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{p.text}</p>
-                  </div>
+                  <p className="text-base font-extrabold">{p.title}</p>
                 </li>
               ))}
             </ul>

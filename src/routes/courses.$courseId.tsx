@@ -7,6 +7,7 @@ import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { resolveLessonVideoUrl, youtubeEmbedUrl, youtubeIdOf } from "@/lib/lesson-video";
+import { CourseQuizzes } from "@/components/site/CourseQuizzes";
 
 export const Route = createFileRoute("/courses/$courseId")({
   head: () => ({
@@ -174,6 +175,12 @@ function CoursePlayer() {
             );
           })}
         </section>
+
+        <CourseQuizzes
+          courseId={courseId}
+          lessonsDone={data.done}
+          lessonPositions={data.lessons.map((l) => ({ id: l.id, position: l.position }))}
+        />
       </div>
     </SiteLayout>
   );

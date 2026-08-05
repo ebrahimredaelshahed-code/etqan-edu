@@ -274,6 +274,142 @@ export type Database = {
         }
         Relationships: []
       }
+      quiz_attempts: {
+        Row: {
+          answers: Json
+          course_id: string
+          created_at: string
+          has_essay: boolean
+          id: string
+          max_score: number
+          quiz_id: string
+          score: number
+          user_id: string
+        }
+        Insert: {
+          answers?: Json
+          course_id: string
+          created_at?: string
+          has_essay?: boolean
+          id?: string
+          max_score?: number
+          quiz_id: string
+          score?: number
+          user_id: string
+        }
+        Update: {
+          answers?: Json
+          course_id?: string
+          created_at?: string
+          has_essay?: boolean
+          id?: string
+          max_score?: number
+          quiz_id?: string
+          score?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_attempts_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quiz_attempts_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "quizzes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quiz_questions: {
+        Row: {
+          correct_index: number | null
+          created_at: string
+          id: string
+          kind: string
+          options: Json
+          points: number
+          position: number
+          prompt: string
+          quiz_id: string
+        }
+        Insert: {
+          correct_index?: number | null
+          created_at?: string
+          id?: string
+          kind?: string
+          options?: Json
+          points?: number
+          position?: number
+          prompt: string
+          quiz_id: string
+        }
+        Update: {
+          correct_index?: number | null
+          created_at?: string
+          id?: string
+          kind?: string
+          options?: Json
+          points?: number
+          position?: number
+          prompt?: string
+          quiz_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_questions_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "quizzes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quizzes: {
+        Row: {
+          course_id: string
+          created_at: string
+          description_ar: string
+          id: string
+          pass_score: number
+          position: number
+          title_ar: string
+          updated_at: string
+        }
+        Insert: {
+          course_id: string
+          created_at?: string
+          description_ar?: string
+          id?: string
+          pass_score?: number
+          position?: number
+          title_ar?: string
+          updated_at?: string
+        }
+        Update: {
+          course_id?: string
+          created_at?: string
+          description_ar?: string
+          id?: string
+          pass_score?: number
+          position?: number
+          title_ar?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quizzes_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subscription_codes: {
         Row: {
           code: string
@@ -382,6 +518,17 @@ export type Database = {
         }
       }
       get_lesson_video: { Args: { _lesson_id: string }; Returns: string }
+      get_quiz_questions: {
+        Args: { _quiz_id: string }
+        Returns: {
+          id: string
+          kind: string
+          options: Json
+          points: number
+          prompt: string
+          sort_order: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -389,10 +536,15 @@ export type Database = {
         }
         Returns: boolean
       }
+      quiz_unlocked: {
+        Args: { _quiz_id: string; _user_id: string }
+        Returns: boolean
+      }
       redeem_code: {
         Args: { _code: string; _course_id: string }
         Returns: Json
       }
+      submit_quiz: { Args: { _answers: Json; _quiz_id: string }; Returns: Json }
     }
     Enums: {
       app_role: "admin" | "user"

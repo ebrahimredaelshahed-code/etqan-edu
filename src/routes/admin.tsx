@@ -11,6 +11,7 @@ import { AdminCatalog } from "@/components/admin/AdminCatalog";
 import { AdminCodes } from "@/components/admin/AdminCodes";
 import { AdminAdmins } from "@/components/admin/AdminAdmins";
 import { AdminUsers } from "@/components/admin/AdminUsers";
+import { AdminQuizzes } from "@/components/admin/AdminQuizzes";
 
 
 export const Route = createFileRoute("/admin")({
@@ -166,7 +167,12 @@ function AdminDashboard({ lang }: { lang: "ar" | "en" }) {
 
         {tab === "codes" && <AdminCodes categories={categories ?? []} courses={courses ?? []} lang={lang} />}
         {tab === "catalog" && <AdminCatalog lang={lang} />}
-        {tab === "videos" && <AdminLessons categories={categories ?? []} courses={courses ?? []} lang={lang} />}
+        {tab === "videos" && (
+          <div className="space-y-8">
+            <AdminLessons categories={categories ?? []} courses={courses ?? []} lang={lang} />
+            <AdminQuizzes categories={categories ?? []} courses={courses ?? []} lang={lang} />
+          </div>
+        )}
         {tab === "users" && <AdminUsers categories={categories ?? []} courses={courses ?? []} />}
         {tab === "admins" && <AdminAdmins />}
       </main>
