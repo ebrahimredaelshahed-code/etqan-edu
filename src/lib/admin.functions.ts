@@ -130,6 +130,78 @@ export const listPlatformUsers = createServerFn({ method: "GET" })
     }));
   });
 
+export const getPlatformUserDetail = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) => z.object({ userId: z.string().uuid() }).parse(data))
+  .handler(async ({ context, data }) => {
+    await assertAdmin(context.supabase as never, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const uid = data.userId;
+    const [
+      { data: profile },
+      { data: subs },
+      { data: enrolls },
+      { data: cats },
+      { data: courses },
+      { data: lessons },
+      { data: progress },
+      { data: quizzes },
+      { data: attempts },
+    ] = await Promise.all([
+      supabaseAdmin.from("profiles").select("*").eq("id", uid).maybeSingle(),
+      supabaseAdmin.from("category_subscriptions").select("category_id").eq("user_id", uid),
+      supabaseAdmin.from("enrollments").select("course_id").eq("user_id", uid),
+      supabaseAdmin.from("categories").select("id, name_ar"),
+      supabaseAdmin.from("courses").select("id, title_ar, category_id"),
+      supabaseAdmin.from("lessons").select("id, course_id"),
+      supabaseAdmin.from("lesson_progress").select("lesson_id, course_id").eq("user_id", uid),
+      supabaseAdmin.from("quizzes").select("id, title_ar, course_id"),
+      supabaseAdmin
+        .from("quiz_attempts")
+        .select("id, quiz_id, course_id, score, max_score, has_essay, created_at")
+        .eq("user_id", uid)
+        .order("created_at", { ascending: false }),
+    ]);
+
+    const catName = new Map((cats ?? []).map((c) => [c.id, c.name_ar]));
+    const courseById = new Map((courses ?? []).map((c) => [c.id, c]));
+    const quizById = new Map((quizzes ?? []).map((q) => [q.id, q]));
+    const doneIds = new Set((progress ?? []).map((p) => p.lesson_id));
+    const enrolledCourseIds = (enrolls ?? []).map((e) => e.course_id);
+
+    return {
+      id: uid,
+      fullName: profile?.full_name ?? "",
+      phone: profile?.phone ?? "",
+      guardianPhone: profile?.guardian_phone ?? "",
+      password: profile?.password_plain ?? "",
+      createdAt: profile?.created_at ?? null,
+      categories: (subs ?? []).map((s) => catName.get(s.category_id) ?? "").filter(Boolean),
+      courses: enrolledCourseIds.map((courseId) => {
+        const course = courseById.get(courseId);
+        const courseLessons = (lessons ?? []).filter((l) => l.course_id === courseId);
+        const completed = courseLessons.filter((l) => doneIds.has(l.id)).length;
+        return {
+          id: courseId,
+          title: course?.title_ar ?? "",
+          category: course ? (catName.get(course.category_id) ?? "") : "",
+          total: courseLessons.length,
+          completed,
+          percent: courseLessons.length ? Math.round((completed / courseLessons.length) * 100) : 0,
+        };
+      }),
+      attempts: (attempts ?? []).map((a) => ({
+        id: a.id,
+        quiz: quizById.get(a.quiz_id)?.title_ar ?? "",
+        course: courseById.get(a.course_id)?.title_ar ?? "",
+        score: Number(a.score),
+        maxScore: Number(a.max_score),
+        hasEssay: a.has_essay,
+        createdAt: a.created_at,
+      })),
+    };
+  });
+
 export const deletePlatformUser = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data) => z.object({ userId: z.string().uuid() }).parse(data))
