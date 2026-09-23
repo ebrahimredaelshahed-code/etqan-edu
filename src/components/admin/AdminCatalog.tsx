@@ -7,9 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { uploadTeacherImage, useTeacherImageUrl } from "@/lib/teacher-image";
 
 
-type Category = { id: string; name_ar: string; name_en: string; slug: string };
-
-export function AdminCatalog({ categories, lang }: { categories: Category[]; lang: "ar" | "en" }) {
+export function AdminCatalog({ lang }: { lang: "ar" | "en" }) {
   const { t } = useI18n();
   const queryClient = useQueryClient();
   const [busy, setBusy] = useState(false);
@@ -27,6 +25,11 @@ export function AdminCatalog({ categories, lang }: { categories: Category[]; lan
   const [hours, setHours] = useState(1);
   const [instructor, setInstructor] = useState("");
   const [image, setImage] = useState("");
+
+  const { data: categories } = useQuery({
+    queryKey: ["admin-categories"],
+    queryFn: async () => (await supabase.from("categories").select("*").order("sort_order")).data ?? [],
+  });
 
   const { data: courses } = useQuery({
     queryKey: ["admin-catalog-courses", categoryId],
@@ -74,14 +77,14 @@ export function AdminCatalog({ categories, lang }: { categories: Category[]; lan
       setTeacherImg("");
       setSpecialty("");
       setSubscriptionPhone("");
-    }, [["admin-categories"], ["admin-access"]]);
+    }, [["admin-categories"]]);
 
   const deleteCategory = (id: string) =>
     run(async () => {
       const { error } = await supabase.from("categories").delete().eq("id", id);
       if (error) throw error;
       toast.success(t("deletedOk"));
-    }, [["admin-categories"], ["admin-access"]]);
+    }, [["admin-categories"]]);
 
   const addCourse = () =>
     run(async () => {
@@ -100,14 +103,14 @@ export function AdminCatalog({ categories, lang }: { categories: Category[]; lan
       setTitleAr("");
       setInstructor("");
       setImage("");
-    }, [["admin-catalog-courses", categoryId], ["admin-courses"], ["admin-access"]]);
+    }, [["admin-catalog-courses", categoryId], ["admin-courses"]]);
 
   const deleteCourse = (id: string) =>
     run(async () => {
       const { error } = await supabase.from("courses").delete().eq("id", id);
       if (error) throw error;
       toast.success(t("deletedOk"));
-    }, [["admin-catalog-courses", categoryId], ["admin-courses"], ["admin-access"]]);
+    }, [["admin-catalog-courses", categoryId], ["admin-courses"]]);
 
   const field = "rounded-2xl border border-border bg-background px-4 py-3 text-sm";
 
@@ -147,8 +150,8 @@ export function AdminCatalog({ categories, lang }: { categories: Category[]; lan
         </div>
 
         <div className="mt-6 space-y-2">
-          {categories.length === 0 && <p className="text-sm text-muted-foreground">{t("noItems")}</p>}
-          {categories.map((c) => (
+          {(categories ?? []).length === 0 && <p className="text-sm text-muted-foreground">{t("noItems")}</p>}
+          {(categories ?? []).map((c) => (
             <div key={c.id} className="flex items-center gap-3 rounded-2xl border border-border bg-background p-4">
               <span className="flex-1 text-sm font-bold">{lang === "ar" ? c.name_ar : c.name_en}</span>
               <span className="text-xs text-muted-foreground" dir="ltr">
@@ -174,7 +177,7 @@ export function AdminCatalog({ categories, lang }: { categories: Category[]; lan
         <div className="mt-5 grid gap-3 sm:grid-cols-2">
           <select value={categoryId} onChange={(e) => setCategoryId(e.target.value)} className={`${field} sm:col-span-2`}>
             <option value="">{t("selectCategory")}</option>
-            {categories.map((c) => (
+            {(categories ?? []).map((c) => (
               <option key={c.id} value={c.id}>
                 {lang === "ar" ? c.name_ar : c.name_en}
               </option>
