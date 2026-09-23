@@ -17,21 +17,24 @@ export const listAdmins = createServerFn({ method: "GET" })
     const { data: roles } = await supabaseAdmin.from("user_roles").select("user_id").eq("role", "admin");
     const ids = (roles ?? []).map((r) => r.user_id);
     if (ids.length === 0) return [];
-    const { data: profiles } = await supabaseAdmin
-      .from("profiles")
-      .select("id, full_name, phone")
-      .in("id", ids);
+    const [{ data: profiles }, { data: assignments }] = await Promise.all([
+      supabaseAdmin.from("profiles").select("id, full_name, phone").in("id", ids),
+      supabaseAdmin.from("admin_category_assignments").select("admin_id, category_id").in("admin_id", ids),
+    ]);
     const byId = new Map((profiles ?? []).map((p) => [p.id, p]));
-    const rows = await Promise.all(
-      ids.map(async (id) => {
-        const profile = byId.get(id);
-        if (profile) return { id, fullName: profile.full_name ?? "", phone: profile.phone ?? "" };
-        const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(id);
-        const meta = (authUser?.user?.user_metadata ?? {}) as { full_name?: string; phone?: string };
-        return { id, fullName: meta.full_name ?? "", phone: meta.phone ?? authUser?.user?.email ?? "" };
-      }),
-    );
-    return rows;
+    const categoryIds = new Map<string, string[]>();
+    for (const assignment of assignments ?? []) {
+      categoryIds.set(assignment.admin_id, [...(categoryIds.get(assignment.admin_id) ?? []), assignment.category_id]);
+    }
+    return ids.map((id) => {
+      const profile = byId.get(id);
+      return {
+        id,
+        fullName: profile?.full_name ?? "",
+        phone: profile?.phone ?? "",
+        categoryIds: categoryIds.get(id) ?? [],
+      };
+    });
   });
 
 export const addAdmin = createServerFn({ method: "POST" })
@@ -42,6 +45,7 @@ export const addAdmin = createServerFn({ method: "POST" })
         fullName: z.string().min(2),
         phone: z.string().min(6),
         password: z.string().min(8),
+        categoryIds: z.array(z.string().uuid()),
       })
       .parse(data),
   )
@@ -70,6 +74,66 @@ export const addAdmin = createServerFn({ method: "POST" })
       await supabaseAdmin.auth.admin.deleteUser(created.user.id);
       throw new Error(roleError.message);
     }
+    const { error: assignmentError } = await supabaseAdmin.from("admin_category_assignments").insert(
+      data.categoryIds.map((categoryId) => ({ admin_id: created.user.id, category_id: categoryId })),
+    );
+    if (assignmentError) {
+      await supabaseAdmin.from("user_roles").delete().eq("user_id", created.user.id);
+      await supabaseAdmin.from("profiles").delete().eq("id", created.user.id);
+      await supabaseAdmin.auth.admin.deleteUser(created.user.id);
+      throw new Error(assignmentError.message);
+    }
+    return { ok: true };
+  });
+
+export const updateAdminCategories = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) =>
+    z.object({ userId: z.string().uuid(), categoryIds: z.array(z.string().uuid()) }).parse(data),
+  )
+  .handler(async ({ context, data }) => {
+    await assertAdmin(context.supabase as never, context.userId);
+    if (data.userId === context.userId) throw new Error("cannot_change_self");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: role } = await supabaseAdmin
+      .from("user_roles")
+      .select("user_id")
+      .eq("user_id", data.userId)
+      .eq("role", "admin")
+      .maybeSingle();
+    if (!role) throw new Error("admin_not_found");
+    const { error: deleteError } = await supabaseAdmin
+      .from("admin_category_assignments")
+      .delete()
+      .eq("admin_id", data.userId);
+    if (deleteError) throw new Error(deleteError.message);
+    if (data.categoryIds.length > 0) {
+      const { error: insertError } = await supabaseAdmin.from("admin_category_assignments").insert(
+        data.categoryIds.map((categoryId) => ({ admin_id: data.userId, category_id: categoryId })),
+      );
+      if (insertError) throw new Error(insertError.message);
+    }
+    return { ok: true };
+  });
+
+export const removeAdminAccess = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) => z.object({ userId: z.string().uuid() }).parse(data))
+  .handler(async ({ context, data }) => {
+    await assertAdmin(context.supabase as never, context.userId);
+    if (data.userId === context.userId) throw new Error("cannot_delete_self");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error: assignmentError } = await supabaseAdmin
+      .from("admin_category_assignments")
+      .delete()
+      .eq("admin_id", data.userId);
+    if (assignmentError) throw new Error(assignmentError.message);
+    const { error } = await supabaseAdmin
+      .from("user_roles")
+      .delete()
+      .eq("user_id", data.userId)
+      .eq("role", "admin");
+    if (error) throw new Error(error.message);
     return { ok: true };
   });
 

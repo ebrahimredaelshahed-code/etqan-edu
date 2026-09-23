@@ -176,7 +176,7 @@ function AdminDashboard({ lang }: { lang: "ar" | "en" }) {
           </div>
         )}
         {tab === "users" && <AdminUsers categories={categories ?? []} courses={courses ?? []} />}
-        {tab === "admins" && <AdminAdmins />}
+        {tab === "admins" && <AdminAdmins categories={categories ?? []} />}
       </main>
     </div>
   );

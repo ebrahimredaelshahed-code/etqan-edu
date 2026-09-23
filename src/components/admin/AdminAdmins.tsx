@@ -2,20 +2,25 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { ShieldPlus, UserCog } from "lucide-react";
+import { ShieldPlus, Trash2, UserCog } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
-import { addAdmin, listAdmins, updateAdminCredentials } from "@/lib/admin.functions";
+import { addAdmin, listAdmins, removeAdminAccess, updateAdminCategories, updateAdminCredentials } from "@/lib/admin.functions";
 
-export function AdminAdmins() {
+type Category = { id: string; name_ar: string; name_en: string };
+
+export function AdminAdmins({ categories }: { categories: Category[] }) {
   const { t } = useI18n();
   const queryClient = useQueryClient();
   const fetchAdmins = useServerFn(listAdmins);
   const createAdmin = useServerFn(addAdmin);
   const updateAdmin = useServerFn(updateAdminCredentials);
+  const updateCategories = useServerFn(updateAdminCategories);
+  const removeAdmin = useServerFn(removeAdminAccess);
 
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+  const [categoryIds, setCategoryIds] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
 
   const { data: admins } = useQuery({
@@ -33,11 +38,12 @@ export function AdminAdmins() {
   const submit = async () => {
     setBusy(true);
     try {
-      await createAdmin({ data: { fullName, phone, password } });
+      await createAdmin({ data: { fullName, phone, password, categoryIds } });
       toast.success(t("savedOk"));
       setFullName("");
       setPhone("");
       setPassword("");
+      setCategoryIds([]);
       await queryClient.invalidateQueries({ queryKey: ["admin-admins"] });
     } catch (e) {
       toast.error(e instanceof Error ? e.message : String(e));
@@ -62,6 +68,7 @@ export function AdminAdmins() {
             placeholder={t("password")}
             className={field}
           />
+          <CategoryPicker categories={categories} value={categoryIds} onChange={setCategoryIds} />
           <button
             disabled={busy}
             onClick={submit}
@@ -82,9 +89,21 @@ export function AdminAdmins() {
             <AdminRow
               key={a.id}
               admin={a}
+              categories={categories}
               onSave={async (input) => {
                 await updateAdmin({ data: { userId: a.id, ...input } });
                 toast.success(t("savedOk"));
+                await queryClient.invalidateQueries({ queryKey: ["admin-admins"] });
+              }}
+              onCategoriesSave={async (nextCategoryIds) => {
+                await updateCategories({ data: { userId: a.id, categoryIds: nextCategoryIds } });
+                toast.success(t("savedOk"));
+                await queryClient.invalidateQueries({ queryKey: ["admin-admins"] });
+              }}
+              onRemove={async () => {
+                if (!window.confirm(t("confirmRemoveAdmin"))) return;
+                await removeAdmin({ data: { userId: a.id } });
+                toast.success(t("adminRemoved"));
                 await queryClient.invalidateQueries({ queryKey: ["admin-admins"] });
               }}
             />
@@ -97,14 +116,21 @@ export function AdminAdmins() {
 
 function AdminRow({
   admin,
+  categories,
   onSave,
+  onCategoriesSave,
+  onRemove,
 }: {
-  admin: { id: string; fullName: string; phone: string };
+  admin: { id: string; fullName: string; phone: string; categoryIds: string[] };
+  categories: Category[];
   onSave: (input: { phone?: string; password?: string }) => Promise<void>;
+  onCategoriesSave: (categoryIds: string[]) => Promise<void>;
+  onRemove: () => Promise<void>;
 }) {
   const { t } = useI18n();
   const [phone, setPhone] = useState(admin.phone);
   const [password, setPassword] = useState("");
+  const [categoryIds, setCategoryIds] = useState(admin.categoryIds);
   const [busy, setBusy] = useState(false);
 
   const save = async () => {
@@ -139,6 +165,7 @@ function AdminRow({
         placeholder={t("newPassword")}
         className="min-w-0 flex-1 rounded-full border border-border bg-card px-4 py-2 text-xs"
       />
+      <CategoryPicker categories={categories} value={categoryIds} onChange={setCategoryIds} />
       <button
         disabled={busy}
         onClick={save}
@@ -146,6 +173,71 @@ function AdminRow({
       >
         {t("update")}
       </button>
+      <button
+        disabled={busy}
+        onClick={async () => {
+          setBusy(true);
+          try {
+            await onCategoriesSave(categoryIds);
+          } catch (e) {
+            toast.error(e instanceof Error ? e.message : String(e));
+          } finally {
+            setBusy(false);
+          }
+        }}
+        className="rounded-full border border-primary px-4 py-1.5 text-xs font-bold text-primary disabled:opacity-60"
+      >
+        {t("saveSubjects")}
+      </button>
+      <button
+        disabled={busy}
+        onClick={async () => {
+          setBusy(true);
+          try {
+            await onRemove();
+          } catch (e) {
+            toast.error(e instanceof Error ? e.message : String(e));
+          } finally {
+            setBusy(false);
+          }
+        }}
+        aria-label={t("removeAdmin")}
+        className="rounded-full bg-destructive/10 p-2 text-destructive disabled:opacity-60"
+      >
+        <Trash2 className="size-4" />
+      </button>
     </div>
+  );
+}
+
+function CategoryPicker({
+  categories,
+  value,
+  onChange,
+}: {
+  categories: Category[];
+  value: string[];
+  onChange: (value: string[]) => void;
+}) {
+  const { t, lang } = useI18n();
+  return (
+    <fieldset className="w-full rounded-2xl border border-border bg-secondary/40 p-3 sm:col-span-3">
+      <legend className="px-1 text-xs font-extrabold">{t("adminSubjects")}</legend>
+      <div className="flex flex-wrap gap-3">
+        {categories.map((category) => {
+          const checked = value.includes(category.id);
+          return (
+            <label key={category.id} className="flex items-center gap-2 text-xs font-bold">
+              <input
+                type="checkbox"
+                checked={checked}
+                onChange={() => onChange(checked ? value.filter((id) => id !== category.id) : [...value, category.id])}
+              />
+              {lang === "ar" ? category.name_ar : category.name_en}
+            </label>
+          );
+        })}
+      </div>
+    </fieldset>
   );
 }
