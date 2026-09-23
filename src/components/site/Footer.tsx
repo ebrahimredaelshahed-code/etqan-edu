@@ -12,7 +12,6 @@ export function Footer() {
           <div className="flex items-center gap-2 text-lg font-extrabold">
             <img src={brandLogo} alt={t("brand")} width={28} height={28} className="size-7 rounded-lg object-cover" /> {t("brand")}
           </div>
-          <p className="max-w-xs text-sm opacity-70">{t("aboutText")}</p>
         </div>
         <div className="space-y-3">
           <h3 className="font-bold">{t("quickLinks")}</h3>

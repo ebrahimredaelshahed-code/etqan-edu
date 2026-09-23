@@ -17,8 +17,6 @@ const dict = {
     heroSubtitle:
       "اختر معلمك، وتعلّم بأسلوب يناسبك، واستفد من محتوى تعليمي متنوع في جميع المواد الدراسية.",
     aboutTitle: "عن المنصة",
-    aboutText:
-      "منصة إتقان منصة تعليم إلكتروني متكاملة توفر محتوى عربيًا وإنجليزيًا عالي الجودة، مع نظام اشتراك آمن بأكواد مخصصة لكل متدرب ودورة.",
     stat1: "متدرب نشط",
     stat2: "دورة تدريبية",
     stat3: "ساعة محتوى",
@@ -222,8 +220,6 @@ const dict = {
     heroSubtitle:
       "Practical courses led by expert instructors, with lesson-by-lesson progress tracking and completion certificates.",
     aboutTitle: "About the platform",
-    aboutText:
-      "Etqan Academy is a complete e-learning platform offering high quality Arabic and English content, with a secure subscription system using codes tied to a single trainee and course.",
     stat1: "Active trainees",
     stat2: "Courses",
     stat3: "Content hours",

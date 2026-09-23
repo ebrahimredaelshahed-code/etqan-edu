@@ -79,7 +79,6 @@ function Index() {
                 <Sparkles className="size-4" /> {t("aboutTitle")}
               </span>
               <h2 className="text-3xl font-extrabold leading-snug sm:text-4xl">{t("aboutHeadline")}</h2>
-              <p className="leading-relaxed text-muted-foreground">{t("aboutText")}</p>
               <Link
                 to="/categories"
                 className="inline-flex items-center gap-2 rounded-full bg-hero-gradient px-6 py-3 text-sm font-extrabold text-ink-foreground shadow-soft transition-transform hover:-translate-y-1"
