@@ -71,8 +71,8 @@ function Index() {
       </section>
 
       {/* About */}
-      <section className="mx-auto max-w-6xl px-4 pb-24">
-        <div className="overflow-hidden rounded-[2rem] border border-border bg-card shadow-soft">
+      <section className="relative z-10 mx-auto -mt-16 max-w-6xl px-4 pb-24 sm:-mt-20">
+        <div className="overflow-hidden rounded-[2rem] border border-border bg-card shadow-lift">
           <div className="grid gap-10 p-8 sm:p-12 md:grid-cols-[1.1fr_1fr]">
             <div className="space-y-5">
               <span className="inline-flex items-center gap-2 rounded-full bg-secondary px-4 py-1.5 text-xs font-extrabold text-primary">
