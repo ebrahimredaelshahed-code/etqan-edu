@@ -78,7 +78,7 @@ function Index() {
       </section>
 
       {/* About */}
-      <section className="relative z-10 mx-auto -mt-16 max-w-6xl px-4 pb-24 sm:-mt-20">
+      <section className="relative z-10 mx-auto -mt-8 max-w-6xl px-4 pb-24 sm:-mt-12">
         <div className="overflow-hidden rounded-[2rem] border border-border bg-card shadow-lift">
           <div className="grid gap-10 p-8 sm:p-12 md:grid-cols-[1.1fr_1fr]">
             <div className="space-y-5">
