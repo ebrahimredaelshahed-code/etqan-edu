@@ -57,7 +57,7 @@ export const addAdmin = createServerFn({ method: "POST" })
     if (error || !created.user) throw new Error(error?.message ?? "create_failed");
     await supabaseAdmin
       .from("profiles")
-      .upsert({ id: created.user.id, full_name: data.fullName, phone: data.phone, guardian_phone: "", password_plain: data.password });
+      .upsert({ id: created.user.id, full_name: data.fullName, phone: data.phone, guardian_phone: "" });
     const { error: roleError } = await supabaseAdmin
       .from("user_roles")
       .upsert({ user_id: created.user.id, role: "admin" }, { onConflict: "user_id,role" });
@@ -85,9 +85,8 @@ export const updateAdminCredentials = createServerFn({ method: "POST" })
     if (Object.keys(payload).length === 0) return { ok: true };
     const { error } = await supabaseAdmin.auth.admin.updateUserById(data.userId, payload);
     if (error) throw new Error(error.message);
-    const profilePatch: { phone?: string; password_plain?: string } = {};
+    const profilePatch: { phone?: string } = {};
     if (data.phone) profilePatch.phone = data.phone;
-    if (data.password) profilePatch.password_plain = data.password;
     if (Object.keys(profilePatch).length > 0) {
       await supabaseAdmin.from("profiles").update(profilePatch).eq("id", data.userId);
     }
@@ -101,7 +100,7 @@ export const listPlatformUsers = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const [{ data: profiles }, { data: roles }, { data: subs }, { data: enrolls }, { data: cats }, { data: courses }] =
       await Promise.all([
-        supabaseAdmin.from("profiles").select("id, full_name, phone, guardian_phone, password_plain, created_at"),
+        supabaseAdmin.from("profiles").select("id, full_name, phone, guardian_phone, created_at"),
         supabaseAdmin.from("user_roles").select("user_id, role"),
         supabaseAdmin.from("category_subscriptions").select("user_id, category_id"),
         supabaseAdmin.from("enrollments").select("user_id, course_id"),
@@ -116,7 +115,6 @@ export const listPlatformUsers = createServerFn({ method: "GET" })
       fullName: p.full_name ?? "",
       phone: p.phone ?? "",
       guardianPhone: p.guardian_phone ?? "",
-      password: p.password_plain ?? "",
       isAdmin: adminIds.has(p.id),
       createdAt: p.created_at,
       categories: (subs ?? [])
@@ -174,7 +172,6 @@ export const getPlatformUserDetail = createServerFn({ method: "POST" })
       fullName: profile?.full_name ?? "",
       phone: profile?.phone ?? "",
       guardianPhone: profile?.guardian_phone ?? "",
-      password: profile?.password_plain ?? "",
       createdAt: profile?.created_at ?? null,
       categories: (subs ?? []).map((s) => catName.get(s.category_id) ?? "").filter(Boolean),
       courses: enrolledCourseIds.map((courseId) => {
