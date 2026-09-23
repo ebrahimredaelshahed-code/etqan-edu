@@ -92,6 +92,7 @@ function AdminLogin({
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
           placeholder={t("phone")}
+          autoComplete="username"
           className="w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none focus:border-primary"
           required
         />
@@ -100,6 +101,7 @@ function AdminLogin({
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder={t("password")}
+          autoComplete="current-password"
           className="w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none focus:border-primary"
           required
         />

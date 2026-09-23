@@ -120,6 +120,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
     signOut: async () => {
       await supabase.auth.signOut();
+      window.localStorage.removeItem(REMEMBER_KEY);
+      window.sessionStorage.removeItem(SESSION_MARK);
       setProfile(null);
       setIsAdmin(false);
     },

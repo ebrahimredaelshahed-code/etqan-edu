@@ -39,6 +39,11 @@ function AuthPage() {
 
   const isSignup = mode === "signup";
 
+  useEffect(() => {
+    setForm({ fullName: "", phone: "", guardianPhone: "", password: "" });
+    setRemember(true);
+  }, [mode]);
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
@@ -50,6 +55,7 @@ function AuthPage() {
       toast.error(error);
       return;
     }
+    setForm({ fullName: "", phone: "", guardianPhone: "", password: "" });
     toast.success(isSignup ? t("codeSuccess") : t("welcomeBack"));
     navigate({ to: "/" });
   };
@@ -66,12 +72,13 @@ function AuthPage() {
         <div className="rounded-3xl border border-border bg-card p-8 shadow-soft">
           <h1 className="text-2xl font-extrabold">{isSignup ? t("createAccount") : t("welcomeBack")}</h1>
 
-          <form onSubmit={submit} className="mt-6 space-y-4">
+          <form onSubmit={submit} className="mt-6 space-y-4" autoComplete={isSignup ? "on" : "off"}>
             {isSignup && (
               <Field
                 label={t("fullName")}
                 value={form.fullName}
                 onChange={(v) => setForm({ ...form, fullName: v })}
+                autoComplete="name"
                 required
               />
             )}
@@ -80,6 +87,7 @@ function AuthPage() {
               value={form.phone}
               onChange={(v) => setForm({ ...form, phone: v })}
               type="tel"
+              autoComplete={isSignup ? "tel" : "username"}
               required
             />
             <p className="text-xs font-semibold text-accent-foreground">{t("phoneNote")}</p>
@@ -89,6 +97,7 @@ function AuthPage() {
                 value={form.guardianPhone}
                 onChange={(v) => setForm({ ...form, guardianPhone: v })}
                 type="tel"
+                autoComplete="tel"
                 required
               />
             )}
@@ -97,6 +106,7 @@ function AuthPage() {
               value={form.password}
               onChange={(v) => setForm({ ...form, password: v })}
               type="password"
+              autoComplete={isSignup ? "new-password" : "current-password"}
               required
             />
 
@@ -139,12 +149,14 @@ function Field({
   value,
   onChange,
   type = "text",
+  autoComplete,
   required,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
   type?: string;
+  autoComplete?: string;
   required?: boolean;
 }) {
   return (
@@ -153,6 +165,7 @@ function Field({
       <input
         type={type}
         value={value}
+        autoComplete={autoComplete}
         required={required}
         onChange={(e) => onChange(e.target.value)}
         className="w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none focus:border-primary"
