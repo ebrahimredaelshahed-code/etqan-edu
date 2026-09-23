@@ -1,6 +1,8 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { registerUser } from "@/lib/auth.functions";
+import { useServerFn } from "@tanstack/react-start";
 
 export type Profile = {
   id: string;
@@ -37,6 +39,7 @@ const REMEMBER_KEY = "etqan_remember";
 const SESSION_MARK = "etqan_session_open";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const createUser = useServerFn(registerUser);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -103,13 +106,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
     signUp: async ({ fullName, phone, guardianPhone, password, remember }) => {
       window.localStorage.setItem(REMEMBER_KEY, remember ? "1" : "0");
-      const { error } = await supabase.auth.signUp({
+      try {
+        await createUser({ data: { fullName, phone, guardianPhone, password } });
+      } catch (error) {
+        return error instanceof Error ? error.message : String(error);
+      }
+
+      const { error } = await supabase.auth.signInWithPassword({
         email: phoneToEmail(phone),
         password,
-        options: {
-          emailRedirectTo: window.location.origin,
-          data: { full_name: fullName, phone, guardian_phone: guardianPhone },
-        },
       });
       return error ? error.message : null;
     },
