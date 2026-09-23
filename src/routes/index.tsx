@@ -1,5 +1,4 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
 import {
   ArrowLeft,
   Sparkles,
@@ -57,7 +56,7 @@ function Index() {
             <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-sm font-semibold">
               <Sparkles className="size-4" /> {t("tagline")}
             </span>
-            <h1 className="text-4xl font-extrabold leading-tight sm:text-6xl">
+            <h1 className="max-w-full break-words text-4xl font-extrabold leading-tight sm:text-6xl">
               {lang === "ar" ? (
                 <>
                   مناهجك الدراسية .. <span className="text-accent">في مكانٍ واحد!!</span>
