@@ -5,31 +5,25 @@ import { useI18n } from "@/lib/i18n";
 export function Footer() {
   const { t } = useI18n();
   return (
-    <footer className="mt-20 bg-ink text-ink-foreground">
-      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 sm:grid-cols-2">
-        <div className="space-y-3">
-          <div className="flex items-center gap-2 text-lg font-extrabold">
-            <img src={brandLogo} alt={t("brand")} width={28} height={28} className="size-7 rounded-lg object-cover" /> {t("brand")}
-          </div>
+    <footer className="site-footer mt-20 overflow-hidden bg-ink text-ink-foreground">
+      <div className="site-footer__rings site-footer__rings--start" aria-hidden="true" />
+      <div className="site-footer__rings site-footer__rings--end" aria-hidden="true" />
+      <div className="site-footer__content mx-auto flex max-w-6xl flex-col items-center px-4 py-12 text-center sm:py-14">
+        <div className="site-footer__brand">
+          <img src={brandLogo} alt={t("brand")} width={76} height={76} className="size-[4.75rem] object-contain" />
+          <span>{t("brand")}</span>
         </div>
-        <div className="space-y-3">
-          <h3 className="font-bold">{t("quickLinks")}</h3>
-          <ul className="space-y-2 text-sm opacity-80">
-            <li>
-              <Link to="/">{t("home")}</Link>
-            </li>
-            <li>
-              <Link to="/categories">{t("categories")}</Link>
-            </li>
-            <li>
-              <Link to="/auth" search={{ mode: "login" }}>
-                {t("login")}
-              </Link>
-            </li>
-          </ul>
-        </div>
+        <nav aria-label={t("quickLinks")} className="site-footer__nav mt-8">
+          <Link to="/">{t("home")}</Link>
+          <span aria-hidden="true">|</span>
+          <Link to="/categories">{t("categories")}</Link>
+          <span aria-hidden="true">|</span>
+          <Link to="/auth" search={{ mode: "login" }}>
+            {t("login")}
+          </Link>
+        </nav>
       </div>
-      <div className="border-t border-white/10 py-5 text-center text-xs opacity-60">
+      <div className="site-footer__legal mx-auto max-w-6xl px-4 py-5 text-center text-xs">
         © {new Date().getFullYear()} {t("brand")} — {t("footerRights")}
       </div>
     </footer>

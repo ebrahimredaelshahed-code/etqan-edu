@@ -157,4 +157,109 @@
   .marquee-track {
     animation: marquee-rtl 30s linear infinite;
   }
+
+  .site-footer {
+    position: relative;
+    isolation: isolate;
+    background: oklch(0.16 0.045 200);
+  }
+
+  .site-footer__content,
+  .site-footer__legal {
+    position: relative;
+    z-index: 1;
+  }
+
+  .site-footer__content {
+    min-height: 20rem;
+  }
+
+  .site-footer__brand {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    color: oklch(0.98 0.01 190);
+    font-size: clamp(1.9rem, 4vw, 3rem);
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  .site-footer__nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(1rem, 4vw, 3.25rem);
+    color: oklch(0.78 0.07 185);
+    font-size: clamp(1rem, 2vw, 1.35rem);
+    font-weight: 700;
+  }
+
+  .site-footer__nav a {
+    transition: color 180ms ease;
+  }
+
+  .site-footer__nav a:hover,
+  .site-footer__nav a:focus-visible {
+    color: oklch(0.78 0.16 66);
+  }
+
+  .site-footer__nav span {
+    color: oklch(0.78 0.16 66 / 0.8);
+    font-weight: 400;
+  }
+
+  .site-footer__legal {
+    border-top: 1px solid oklch(0.44 0.08 190 / 0.55);
+    color: oklch(0.78 0.035 190);
+    font-size: 0.95rem;
+  }
+
+  .site-footer__rings {
+    position: absolute;
+    z-index: 0;
+    width: 27rem;
+    height: 27rem;
+    border: 2px solid oklch(0.52 0.14 185 / 0.75);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+
+  .site-footer__rings::after {
+    position: absolute;
+    inset: 2.8rem;
+    border: 2px solid oklch(0.76 0.16 62 / 0.9);
+    border-radius: 50%;
+    content: "";
+  }
+
+  .site-footer__rings--start {
+    top: -13rem;
+    inset-inline-start: -17rem;
+  }
+
+  .site-footer__rings--end {
+    top: -22rem;
+    inset-inline-end: -21rem;
+    border-color: oklch(0.76 0.16 62 / 0.9);
+  }
+
+  .site-footer__rings--end::after {
+    border-color: oklch(0.52 0.14 185 / 0.75);
+  }
+}
+
+@media (max-width: 480px) {
+  .site-footer__content {
+    min-height: 17rem;
+  }
+
+  .site-footer__nav {
+    gap: 0.8rem;
+    font-size: 0.95rem;
+  }
+
+  .site-footer__rings {
+    width: 20rem;
+    height: 20rem;
+  }
 }
