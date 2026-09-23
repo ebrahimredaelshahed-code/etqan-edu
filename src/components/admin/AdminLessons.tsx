@@ -128,7 +128,7 @@ export function AdminLessons({ categories, courses, lang }: { categories: Catego
           onChange={(e) => setCourseId(e.target.value)}
           className="rounded-2xl border border-border bg-background px-4 py-3 text-sm sm:col-span-2 disabled:opacity-60"
         >
-          <option value="">{t("course")}</option>
+          <option value="">{t("packageLabel")}</option>
           {courses.filter((c) => c.category_id === categoryId).map((c) => (
             <option key={c.id} value={c.id}>
               {lang === "ar" ? c.title_ar : c.title_en}

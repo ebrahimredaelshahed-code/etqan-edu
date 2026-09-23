@@ -92,7 +92,7 @@ export function AdminCodes({
             ))}
           </select>
           <select value={courseId} onChange={(e) => setCourseId(e.target.value)} className={field} disabled={!categoryId}>
-            <option value="">{t("course")}</option>
+            <option value="">{t("packageLabel")}</option>
             {filtered.map((c) => (
               <option key={c.id} value={c.id}>
                 {lang === "ar" ? c.title_ar : c.title_en}
@@ -123,7 +123,7 @@ export function AdminCodes({
           <thead className="bg-secondary text-secondary-foreground">
             <tr>
               <th className="p-4 text-start">{t("code")}</th>
-              <th className="p-4 text-start">{t("course")}</th>
+              <th className="p-4 text-start">{t("packageLabel")}</th>
               <th className="p-4 text-start">{t("status")}</th>
               <th className="p-4 text-start">{t("deleteLabel")}</th>
             </tr>

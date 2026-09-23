@@ -118,7 +118,7 @@ export function AdminQuizzes({
           }}
           className={`${field} sm:col-span-2 disabled:opacity-60`}
         >
-          <option value="">{t("course")}</option>
+          <option value="">{t("packageLabel")}</option>
           {courses
             .filter((c) => c.category_id === categoryId)
             .map((c) => (
