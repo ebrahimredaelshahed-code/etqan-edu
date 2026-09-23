@@ -10,8 +10,6 @@ import {
 
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { useI18n } from "@/lib/i18n";
-import { supabase } from "@/integrations/supabase/client";
-import { TeacherPhoto } from "@/components/site/TeacherPhoto";
 import heroPattern from "@/assets/hero-pattern.png";
 
 export const Route = createFileRoute("/")({
@@ -37,21 +35,6 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   const { t, lang } = useI18n();
-
-  const { data: teachers } = useQuery({
-    queryKey: ["home-teachers"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("categories")
-        .select("id, slug, name_ar, description_ar, teacher_name, teacher_image_url")
-        .order("sort_order");
-      if (error) throw error;
-      return data;
-    },
-  });
-
-
-
 
   const aboutPoints = [
     { icon: PlayCircle, title: t("aboutPoint1") },
@@ -86,51 +69,6 @@ function Index() {
           </div>
         </div>
       </section>
-
-      {/* Teachers strip */}
-      <section className="mx-auto max-w-6xl px-4 py-16">
-        <div className="flex items-end justify-between gap-4">
-          <div>
-            <h2 className="text-3xl font-extrabold sm:text-4xl">{t("leadTitle")}</h2>
-            <p className="mt-2 text-sm text-muted-foreground">{t("leadSubtitle")}</p>
-          </div>
-          <Link
-            to="/categories"
-            className="hidden shrink-0 rounded-full border border-border px-5 py-2.5 text-sm font-bold text-primary transition-colors hover:bg-secondary sm:inline-flex"
-          >
-            {t("browseCategories")}
-          </Link>
-        </div>
-
-        <div className="marquee mt-8 overflow-hidden">
-          <div className="marquee-track flex w-max gap-5">
-            {[...(teachers ?? []), ...(teachers ?? [])].map((c, i) => (
-              <div
-                key={`${c.id}-${i}`}
-                aria-hidden={i >= (teachers?.length ?? 0)}
-                className="pointer-events-none w-[240px] shrink-0 select-none overflow-hidden rounded-3xl border border-border bg-card shadow-soft"
-              >
-                <div className="relative h-[220px] overflow-hidden bg-hero-gradient">
-                  <TeacherPhoto
-                    value={c.teacher_image_url}
-                    alt={c.teacher_name || c.name_ar}
-                    className="absolute inset-0 size-full object-cover object-top"
-                  />
-                </div>
-                <div className="space-y-1 p-5">
-                  <p className="text-lg font-extrabold">{c.teacher_name || c.name_ar}</p>
-                  <p className="text-sm font-semibold text-primary">{c.name_ar}</p>
-                  {c.description_ar && (
-                    <p className="line-clamp-1 text-xs text-muted-foreground">{c.description_ar}</p>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-          {!teachers?.length && <p className="text-muted-foreground">{t("loading")}</p>}
-        </div>
-      </section>
-
 
       {/* About */}
       <section className="mx-auto max-w-6xl px-4 pb-24">
