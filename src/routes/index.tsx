@@ -10,6 +10,7 @@ import {
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { useI18n } from "@/lib/i18n";
 import heroPattern from "@/assets/hero-pattern.png";
+import studentHero from "@/assets/student-hero.png";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -51,8 +52,8 @@ function Index() {
           height={1080}
           className="absolute inset-0 size-full object-cover opacity-60"
         />
-        <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-4 py-14 sm:py-20 lg:py-24">
-          <div className="max-w-2xl space-y-6">
+        <div className="relative mx-auto grid max-w-6xl items-center gap-8 px-4 py-10 sm:gap-10 sm:py-16 lg:grid-cols-[1fr_1.05fr] lg:py-20">
+          <div className="order-1 max-w-2xl space-y-6">
             <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-sm font-semibold">
               <Sparkles className="size-4" /> {t("tagline")}
             </span>
@@ -73,6 +74,16 @@ function Index() {
               {t("browseCategories")}
               <ArrowLeft className={lang === "ar" ? "size-5" : "size-5 rotate-180"} />
             </Link>
+          </div>
+
+          <div className="order-2 flex items-center justify-center lg:justify-start">
+            <img
+              src={studentHero}
+              alt="طالب يتعلم عبر منصة إتقان"
+              width={640}
+              height={640}
+              className="w-full max-w-md object-contain drop-shadow-2xl sm:max-w-lg"
+            />
           </div>
         </div>
       </section>
