@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { Download, Eye, EyeOff, Trash2, Users, X } from "lucide-react";
+import { Download, Trash2, Users, X } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { deletePlatformUser, getPlatformUserDetail, listPlatformUsers } from "@/lib/admin.functions";
 
@@ -44,7 +44,6 @@ export function AdminUsers({ categories, courses }: { categories: Category[]; co
       t("fullName"),
       t("phone"),
       t("guardianPhone"),
-      t("password"),
       t("subscribedCategories"),
       t("subscribedCourses"),
     ];
@@ -52,7 +51,7 @@ export function AdminUsers({ categories, courses }: { categories: Category[]; co
     const body = rows
       .map(
         (u) =>
-          `<tr>${[u.fullName, u.phone, u.guardianPhone, u.password, u.categories.join("، "), u.courses.join("، ")]
+          `<tr>${[u.fullName, u.phone, u.guardianPhone, u.categories.join("، "), u.courses.join("، ")]
             .map((v) => `<td>${esc(String(v ?? ""))}</td>`)
             .join("")}</tr>`,
       )
@@ -164,7 +163,6 @@ export function AdminUsers({ categories, courses }: { categories: Category[]; co
 function UserDialog({ userId, onClose }: { userId: string; onClose: () => void }) {
   const { t } = useI18n();
   const fetchDetail = useServerFn(getPlatformUserDetail);
-  const [showPassword, setShowPassword] = useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin-user-detail", userId],
@@ -198,21 +196,6 @@ function UserDialog({ userId, onClose }: { userId: string; onClose: () => void }
               <Info label={t("fullName")} value={data.fullName || "—"} />
               <Info label={t("phone")} value={data.phone || "—"} ltr />
               <Info label={t("guardianPhone")} value={data.guardianPhone || "—"} ltr />
-              <div className="rounded-2xl border border-border p-4">
-                <dt className="text-xs font-bold text-muted-foreground">{t("password")}</dt>
-                <dd className="mt-1 flex items-center gap-2 font-mono text-sm" dir="ltr">
-                  {data.password ? (showPassword ? data.password : "••••••••") : "—"}
-                  {data.password && (
-                    <button
-                      onClick={() => setShowPassword((v) => !v)}
-                      aria-label={showPassword ? t("hidePassword") : t("showPassword")}
-                      className="text-primary"
-                    >
-                      {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-                    </button>
-                  )}
-                </dd>
-              </div>
             </dl>
 
             <div>
