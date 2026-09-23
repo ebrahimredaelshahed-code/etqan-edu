@@ -17,6 +17,7 @@ export function AdminCatalog({ lang }: { lang: "ar" | "en" }) {
   const [teacher, setTeacher] = useState("");
   const [teacherImg, setTeacherImg] = useState("");
   const [specialty, setSpecialty] = useState("");
+  const [subscriptionPhone, setSubscriptionPhone] = useState("");
 
   const [categoryId, setCategoryId] = useState("");
   const [titleAr, setTitleAr] = useState("");
@@ -66,6 +67,7 @@ export function AdminCatalog({ lang }: { lang: "ar" | "en" }) {
         teacher_image_url: teacherImg,
         description_ar: specialty,
         description_en: specialty,
+        subscription_phone: subscriptionPhone,
       });
       if (error) throw error;
       toast.success(t("savedOk"));
@@ -74,6 +76,7 @@ export function AdminCatalog({ lang }: { lang: "ar" | "en" }) {
       setTeacher("");
       setTeacherImg("");
       setSpecialty("");
+      setSubscriptionPhone("");
     }, [["admin-categories"]]);
 
   const deleteCategory = (id: string) =>
@@ -122,6 +125,13 @@ export function AdminCatalog({ lang }: { lang: "ar" | "en" }) {
           <input value={slug} dir="ltr" onChange={(e) => setSlug(e.target.value)} placeholder={t("slug")} className={field} />
           <input value={teacher} onChange={(e) => setTeacher(e.target.value)} placeholder={t("teacherName")} className={field} />
           <input value={specialty} onChange={(e) => setSpecialty(e.target.value)} placeholder={t("teacherSpecialty")} className={field} />
+          <input
+            value={subscriptionPhone}
+            dir="ltr"
+            onChange={(e) => setSubscriptionPhone(e.target.value)}
+            placeholder={t("subscriptionPhone")}
+            className={field}
+          />
           <TeacherImageField
             value={teacherImg}
             onChange={setTeacherImg}

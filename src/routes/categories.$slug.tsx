@@ -31,6 +31,7 @@ type CourseRow = {
   duration_hours: number;
   price: number;
   instructor: string;
+  subscription_phone: string;
 };
 
 function CategoryCourses() {
@@ -61,7 +62,14 @@ function CategoryCourses() {
       const { data: lessons } = ids.length
         ? await supabase.from("lessons").select("id, course_id").in("course_id", ids)
         : { data: [] };
-      return { category, courses: (courses ?? []) as CourseRow[], lessons: lessons ?? [] };
+      return {
+        category,
+        courses: (courses ?? []).map((course) => ({
+          ...course,
+          subscription_phone: category.subscription_phone,
+        })) as CourseRow[],
+        lessons: lessons ?? [],
+      };
     },
   });
 
@@ -253,7 +261,11 @@ function EnrollDialog({
             />
           </div>
           <button
-            onClick={() => toast.info(t("getCodeHint"))}
+            onClick={() =>
+              toast.info(
+                t("getCodeHint").replace("01000000000", course.subscription_phone || "01000000000"),
+              )
+            }
             className="w-full rounded-full border border-border px-5 py-3 text-sm font-bold hover:bg-secondary"
           >
             {t("getCode")}

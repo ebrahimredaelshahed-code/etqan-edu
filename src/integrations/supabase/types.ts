@@ -25,6 +25,7 @@ export type Database = {
           name_en: string
           slug: string
           sort_order: number
+          subscription_phone: string
           teacher_image_url: string
           teacher_name: string
         }
@@ -38,6 +39,7 @@ export type Database = {
           name_en: string
           slug: string
           sort_order?: number
+          subscription_phone?: string
           teacher_image_url?: string
           teacher_name?: string
         }
@@ -51,6 +53,7 @@ export type Database = {
           name_en?: string
           slug?: string
           sort_order?: number
+          subscription_phone?: string
           teacher_image_url?: string
           teacher_name?: string
         }
