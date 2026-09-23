@@ -1,11 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Film, KeyRound, Layers, LogOut, ShieldCheck, Users } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
-import { supabase } from "@/integrations/supabase/client";
+import { getAdminAccess } from "@/lib/admin.functions";
 import { AdminLessons } from "@/components/admin/AdminLessons";
 import { AdminCatalog } from "@/components/admin/AdminCatalog";
 import { AdminCodes } from "@/components/admin/AdminCodes";
@@ -117,27 +118,41 @@ function AdminLogin({
 }
 
 const TABS = [
-  { id: "codes", label: "tabCodes", icon: KeyRound },
-  { id: "catalog", label: "tabCatalog", icon: Layers },
-  { id: "videos", label: "tabVideos", icon: Film },
-  { id: "users", label: "tabUsers", icon: Users },
-  { id: "admins", label: "tabAdmins", icon: ShieldCheck },
+  { id: "codes", label: "tabCodes", icon: KeyRound, permission: "codes" },
+  { id: "catalog", label: "tabCatalog", icon: Layers, permission: "catalog" },
+  { id: "videos", label: "tabVideos", icon: Film, permission: "videos" },
+  { id: "users", label: "tabUsers", icon: Users, permission: "users" },
+  { id: "admins", label: "tabAdmins", icon: ShieldCheck, permission: "admins" },
 ] as const;
 
 function AdminDashboard({ lang }: { lang: "ar" | "en" }) {
   const { t } = useI18n();
   const { signOut } = useAuth();
+  const fetchAccess = useServerFn(getAdminAccess);
   const [tab, setTab] = useState<(typeof TABS)[number]["id"]>("codes");
 
-  const { data: categories } = useQuery({
-    queryKey: ["admin-categories"],
-    queryFn: async () => (await supabase.from("categories").select("*").order("sort_order")).data ?? [],
+  const { data: access, isLoading: accessLoading, error: accessError } = useQuery({
+    queryKey: ["admin-access"],
+    queryFn: () => fetchAccess({}),
+    staleTime: 30_000,
+  });
+  const permissions = access?.permissions;
+  const visibleTabs = TABS.filter(({ permission }) => {
+    if (!permissions) return false;
+    const key = `can${permission[0].toUpperCase()}${permission.slice(1)}` as "canCodes" | "canCatalog" | "canVideos" | "canUsers" | "canAdmins";
+    return permissions.fullAccess || permissions[key];
   });
 
-  const { data: courses } = useQuery({
-    queryKey: ["admin-courses"],
-    queryFn: async () => (await supabase.from("courses").select("*").order("title_ar")).data ?? [],
-  });
+  useEffect(() => {
+    if (visibleTabs.length > 0 && !visibleTabs.some((item) => item.id === tab)) setTab(visibleTabs[0].id);
+  }, [tab, visibleTabs]);
+
+  if (accessLoading) return <Shell>{t("loading")}</Shell>;
+  if (accessError || !access || visibleTabs.length === 0) {
+    return <Shell><p className="font-bold">{t("notAdmin")}</p></Shell>;
+  }
+  const categories = access.categories;
+  const courses = access.courses;
 
   return (
     <div className="min-h-screen bg-background">
@@ -154,7 +169,7 @@ function AdminDashboard({ lang }: { lang: "ar" | "en" }) {
 
       <main className="mx-auto max-w-6xl space-y-8 px-4 py-10">
         <nav className="flex flex-wrap gap-2 rounded-3xl border border-border bg-card p-2 shadow-soft">
-          {TABS.map(({ id, label, icon: Icon }) => (
+          {visibleTabs.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
               onClick={() => setTab(id)}
@@ -168,7 +183,7 @@ function AdminDashboard({ lang }: { lang: "ar" | "en" }) {
         </nav>
 
         {tab === "codes" && <AdminCodes categories={categories ?? []} courses={courses ?? []} lang={lang} />}
-        {tab === "catalog" && <AdminCatalog lang={lang} />}
+        {tab === "catalog" && <AdminCatalog categories={categories} lang={lang} />}
         {tab === "videos" && (
           <div className="space-y-8">
             <AdminLessons categories={categories ?? []} courses={courses ?? []} lang={lang} />
@@ -176,7 +191,7 @@ function AdminDashboard({ lang }: { lang: "ar" | "en" }) {
           </div>
         )}
         {tab === "users" && <AdminUsers categories={categories ?? []} courses={courses ?? []} />}
-        {tab === "admins" && <AdminAdmins />}
+        {tab === "admins" && <AdminAdmins categories={categories} />}
       </main>
     </div>
   );

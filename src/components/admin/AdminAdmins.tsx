@@ -4,18 +4,30 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { ShieldPlus, UserCog } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
-import { addAdmin, listAdmins, updateAdminCredentials } from "@/lib/admin.functions";
+import { addAdmin, listAdmins, updateAdminCredentials, updateAdminPermissions, type AdminPermissions } from "@/lib/admin.functions";
 
-export function AdminAdmins() {
+type Category = { id: string; name_ar: string; name_en: string };
+type PermissionInput = Omit<AdminPermissions, "fullAccess">;
+
+export function AdminAdmins({ categories }: { categories: Category[] }) {
   const { t } = useI18n();
   const queryClient = useQueryClient();
   const fetchAdmins = useServerFn(listAdmins);
   const createAdmin = useServerFn(addAdmin);
   const updateAdmin = useServerFn(updateAdminCredentials);
+  const savePermissions = useServerFn(updateAdminPermissions);
 
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+  const [permissions, setPermissions] = useState<PermissionInput>({
+    canCodes: false,
+    canCatalog: false,
+    canVideos: false,
+    canUsers: false,
+    canAdmins: false,
+    categoryIds: [],
+  });
   const [busy, setBusy] = useState(false);
 
   const { data: admins } = useQuery({
@@ -33,11 +45,12 @@ export function AdminAdmins() {
   const submit = async () => {
     setBusy(true);
     try {
-      await createAdmin({ data: { fullName, phone, password } });
+      await createAdmin({ data: { fullName, phone, password, ...permissions } });
       toast.success(t("savedOk"));
       setFullName("");
       setPhone("");
       setPassword("");
+      setPermissions({ canCodes: false, canCatalog: false, canVideos: false, canUsers: false, canAdmins: false, categoryIds: [] });
       await queryClient.invalidateQueries({ queryKey: ["admin-admins"] });
     } catch (e) {
       toast.error(e instanceof Error ? e.message : String(e));
@@ -62,6 +75,7 @@ export function AdminAdmins() {
             placeholder={t("password")}
             className={field}
           />
+          <PermissionPicker value={permissions} categories={categories} onChange={setPermissions} />
           <button
             disabled={busy}
             onClick={submit}
@@ -82,8 +96,10 @@ export function AdminAdmins() {
             <AdminRow
               key={a.id}
               admin={a}
+              categories={categories}
               onSave={async (input) => {
-                await updateAdmin({ data: { userId: a.id, ...input } });
+                await savePermissions({ data: { userId: a.id, ...input.permissions } });
+                if (input.password) await updateAdmin({ data: { userId: a.id, password: input.password } });
                 toast.success(t("savedOk"));
                 await queryClient.invalidateQueries({ queryKey: ["admin-admins"] });
               }}
@@ -97,21 +113,30 @@ export function AdminAdmins() {
 
 function AdminRow({
   admin,
+  categories,
   onSave,
 }: {
-  admin: { id: string; fullName: string; phone: string };
-  onSave: (input: { phone?: string; password?: string }) => Promise<void>;
+  admin: { id: string; fullName: string; permissions: AdminPermissions };
+  categories: Category[];
+  onSave: (input: { permissions: PermissionInput; password?: string }) => Promise<void>;
 }) {
   const { t } = useI18n();
-  const [phone, setPhone] = useState(admin.phone);
   const [password, setPassword] = useState("");
+  const [permissions, setPermissions] = useState<PermissionInput>({
+    canCodes: admin.permissions.canCodes,
+    canCatalog: admin.permissions.canCatalog,
+    canVideos: admin.permissions.canVideos,
+    canUsers: admin.permissions.canUsers,
+    canAdmins: admin.permissions.canAdmins,
+    categoryIds: admin.permissions.categoryIds,
+  });
   const [busy, setBusy] = useState(false);
 
   const save = async () => {
     setBusy(true);
     try {
       await onSave({
-        phone: phone && phone !== admin.phone ? phone : undefined,
+        permissions,
         password: password || undefined,
       });
       setPassword("");
@@ -123,15 +148,9 @@ function AdminRow({
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-background p-4">
-      <span className="w-full text-sm font-bold sm:w-auto sm:flex-1">{admin.fullName || admin.phone}</span>
-      <input
-        value={phone}
-        dir="ltr"
-        onChange={(e) => setPhone(e.target.value)}
-        placeholder={t("newPhone")}
-        className="min-w-0 flex-1 rounded-full border border-border bg-card px-4 py-2 text-xs"
-      />
+    <div className="space-y-4 rounded-2xl border border-border bg-background p-4">
+      <span className="block text-sm font-bold">{admin.fullName || t("adminAccount")}</span>
+      <PermissionPicker value={permissions} categories={categories} onChange={setPermissions} />
       <input
         type="password"
         value={password}
@@ -146,6 +165,63 @@ function AdminRow({
       >
         {t("update")}
       </button>
+    </div>
+  );
+}
+
+function PermissionPicker({
+  value,
+  categories,
+  onChange,
+}: {
+  value: PermissionInput;
+  categories: Category[];
+  onChange: (value: PermissionInput) => void;
+}) {
+  const { t, lang } = useI18n();
+  const permissions = [
+    ["canCodes", "tabCodes"],
+    ["canCatalog", "tabCatalog"],
+    ["canVideos", "tabVideos"],
+    ["canUsers", "tabUsers"],
+    ["canAdmins", "tabAdmins"],
+  ] as const;
+
+  const toggleCategory = (categoryId: string) => {
+    const categoryIds = value.categoryIds.includes(categoryId)
+      ? value.categoryIds.filter((id) => id !== categoryId)
+      : [...value.categoryIds, categoryId];
+    onChange({ ...value, categoryIds });
+  };
+
+  return (
+    <div className="space-y-3 rounded-2xl border border-border bg-secondary/40 p-4 sm:col-span-3">
+      <p className="text-sm font-extrabold">{t("adminPermissions")}</p>
+      <div className="flex flex-wrap gap-4">
+        {permissions.map(([key, label]) => (
+          <label key={key} className="flex items-center gap-2 text-sm font-bold">
+            <input
+              type="checkbox"
+              checked={value[key]}
+              onChange={(event) => onChange({ ...value, [key]: event.target.checked })}
+            />
+            {t(label)}
+          </label>
+        ))}
+      </div>
+      <div className="flex flex-wrap gap-3 border-t border-border pt-3">
+        <span className="text-xs font-bold text-muted-foreground">{t("adminCategories")}</span>
+        {categories.map((category) => (
+          <label key={category.id} className="flex items-center gap-2 text-xs font-bold">
+            <input
+              type="checkbox"
+              checked={value.categoryIds.includes(category.id)}
+              onChange={() => toggleCategory(category.id)}
+            />
+            {lang === "ar" ? category.name_ar : category.name_en}
+          </label>
+        ))}
+      </div>
     </div>
   );
 }
