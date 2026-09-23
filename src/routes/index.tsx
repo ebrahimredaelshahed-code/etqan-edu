@@ -52,12 +52,20 @@ function Index() {
           height={1080}
           className="absolute inset-0 size-full object-cover opacity-60"
         />
-        <div className="relative mx-auto grid max-w-6xl gap-10 px-4 py-24 sm:py-32">
+        <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-4 py-14 sm:py-20 lg:py-24">
           <div className="max-w-2xl space-y-6">
             <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-sm font-semibold">
               <Sparkles className="size-4" /> {t("tagline")}
             </span>
-            <h1 className="text-4xl font-extrabold leading-tight sm:text-6xl">{t("heroTitle")}</h1>
+            <h1 className="text-4xl font-extrabold leading-tight sm:text-6xl">
+              {lang === "ar" ? (
+                <>
+                  مناهجك الدراسية .. <span className="text-accent">في مكانٍ واحد!!</span>
+                </>
+              ) : (
+                t("heroTitle")
+              )}
+            </h1>
 
             <Link
               to="/categories"
