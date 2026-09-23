@@ -171,7 +171,7 @@
   }
 
   .site-footer__content {
-    min-height: 20rem;
+    min-height: 14rem;
   }
 
   .site-footer__brand {
@@ -250,7 +250,7 @@
 
 @media (max-width: 480px) {
   .site-footer__content {
-    min-height: 17rem;
+    min-height: 12rem;
   }
 
   .site-footer__nav {

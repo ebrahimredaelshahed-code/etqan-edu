@@ -8,7 +8,7 @@ export function Footer() {
     <footer className="site-footer mt-20 overflow-hidden bg-ink text-ink-foreground">
       <div className="site-footer__rings site-footer__rings--start" aria-hidden="true" />
       <div className="site-footer__rings site-footer__rings--end" aria-hidden="true" />
-      <div className="site-footer__content mx-auto flex max-w-6xl flex-col items-center px-4 py-12 text-center sm:py-14">
+      <div className="site-footer__content mx-auto flex max-w-6xl flex-col items-center px-4 py-8 text-center sm:py-10">
         <div className="site-footer__brand">
           <img src={brandLogo} alt={t("brand")} width={76} height={76} className="size-[4.75rem] object-contain" />
           <span>{t("brand")}</span>
@@ -20,6 +20,10 @@ export function Footer() {
           <span aria-hidden="true">|</span>
           <Link to="/auth" search={{ mode: "login" }}>
             {t("login")}
+          </Link>
+          <span aria-hidden="true">|</span>
+          <Link to="/account" search={{ tab: "profile" }}>
+            {t("profile")}
           </Link>
         </nav>
       </div>
