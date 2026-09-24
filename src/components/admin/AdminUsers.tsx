@@ -9,7 +9,7 @@ import { deletePlatformUser, getPlatformUserDetail, listPlatformUsers } from "@/
 type Category = { id: string; name_ar: string; name_en: string };
 type Course = { id: string; category_id: string; title_ar: string; title_en: string };
 
-export function AdminUsers({ categories, courses }: { categories: Category[]; courses: Course[] }) {
+export function AdminUsers({ categories, courses, isSuperAdmin }: { categories: Category[]; courses: Course[]; isSuperAdmin: boolean }) {
   const { t } = useI18n();
   const queryClient = useQueryClient();
   const fetchUsers = useServerFn(listPlatformUsers);
@@ -121,24 +121,24 @@ export function AdminUsers({ categories, courses }: { categories: Category[]; co
           <thead className="bg-secondary text-secondary-foreground">
             <tr>
               <th className="p-3 text-start">{t("fullName")}</th>
-              <th className="p-3 text-start">{t("deleteLabel")}</th>
+              {isSuperAdmin && <th className="p-3 text-start">{t("deleteLabel")}</th>}
             </tr>
           </thead>
           <tbody>
             {rows.length === 0 && (
               <tr>
-                <td colSpan={2} className="p-4 text-muted-foreground">
+                <td colSpan={isSuperAdmin ? 2 : 1} className="p-4 text-muted-foreground">
                   {t("noItems")}
                 </td>
               </tr>
             )}
             {rows.map((u) => (
               <tr key={u.id} className="border-t border-border">
-                <td className="p-3">
+                {isSuperAdmin && <td className="p-3">
                   <button onClick={() => setOpenUser(u.id)} className="font-bold text-primary hover:underline">
                     {u.fullName || u.phone || "—"}
                   </button>
-                </td>
+                </td>}
                 <td className="p-3">
                   <button
                     disabled={busy}

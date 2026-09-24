@@ -4,37 +4,75 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const phoneToEmail = (phone: string) => `u${phone.replace(/\D/g, "")}@etqan-academy.app`;
 
+export type AdminAccess = {
+  isSuperAdmin: boolean;
+  categoryIds: string[];
+  permissions: { codes: boolean; catalog: boolean; videos: boolean; users: boolean };
+};
+
+type RpcClient = {
+  rpc: (fn: string, args?: Record<string, unknown>) => Promise<{ data: unknown; error: { message: string } | null }>;
+};
+
+async function readRpc(supabase: unknown, fn: string, args?: Record<string, unknown>) {
+  const { data, error } = await (supabase as RpcClient).rpc(fn, args);
+  if (error) throw new Error(error.message);
+  return data;
+}
+
 async function assertAdmin(supabase: { rpc: (fn: string, args: Record<string, unknown>) => Promise<{ data: unknown }> }, userId: string) {
   const { data } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
   if (data !== true) throw new Error("forbidden");
 }
 
-export const listAdmins = createServerFn({ method: "GET" })
+async function assertSuperAdmin(supabase: unknown) {
+  if ((await readRpc(supabase, "is_super_admin")) !== true) throw new Error("forbidden");
+}
+
+export const getAdminAccess = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await assertAdmin(context.supabase as never, context.userId);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: roles } = await supabaseAdmin.from("user_roles").select("user_id").eq("role", "admin");
-    const ids = (roles ?? []).map((r) => r.user_id);
-    if (ids.length === 0) return [];
-    const [{ data: profiles }, { data: assignments }] = await Promise.all([
-      supabaseAdmin.from("profiles").select("id, full_name, phone").in("id", ids),
-      supabaseAdmin.from("admin_category_assignments").select("admin_id, category_id").in("admin_id", ids),
-    ]);
-    const byId = new Map((profiles ?? []).map((p) => [p.id, p]));
-    const categoryIds = new Map<string, string[]>();
-    for (const assignment of assignments ?? []) {
-      categoryIds.set(assignment.admin_id, [...(categoryIds.get(assignment.admin_id) ?? []), assignment.category_id]);
-    }
-    return ids.map((id) => {
-      const profile = byId.get(id);
-      return {
-        id,
-        fullName: profile?.full_name ?? "",
-        phone: profile?.phone ?? "",
-        categoryIds: categoryIds.get(id) ?? [],
-      };
-    });
+    const data = (await readRpc(context.supabase, "get_admin_access")) as {
+      isSuperAdmin?: boolean;
+      categoryIds?: unknown;
+      permissions?: Partial<AdminAccess["permissions"]>;
+    };
+    return {
+      isSuperAdmin: data.isSuperAdmin === true,
+      categoryIds: Array.isArray(data.categoryIds) ? data.categoryIds.filter((id): id is string => typeof id === "string") : [],
+      permissions: {
+        codes: data.permissions?.codes === true,
+        catalog: data.permissions?.catalog === true,
+        videos: data.permissions?.videos === true,
+        users: data.permissions?.users === true,
+      },
+    } satisfies AdminAccess;
+  });
+
+export const listAdmins = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertSuperAdmin(context.supabase);
+    const rows = (await readRpc(context.supabase, "admin_list_admins")) as Array<{
+      id: string;
+      full_name: string;
+      phone: string;
+      category_id: string | null;
+      can_codes: boolean;
+      can_catalog: boolean;
+      can_videos: boolean;
+      can_users: boolean;
+      is_super_admin: boolean;
+    }>;
+    return rows.map((row) => ({
+      id: row.id,
+      fullName: row.full_name ?? "",
+      phone: row.phone ?? "",
+      categoryId: row.category_id,
+      permissions: { codes: row.can_codes, catalog: row.can_catalog, videos: row.can_videos, users: row.can_users },
+      isSuperAdmin: row.is_super_admin,
+    }));
   });
 
 export const addAdmin = createServerFn({ method: "POST" })
@@ -45,12 +83,13 @@ export const addAdmin = createServerFn({ method: "POST" })
         fullName: z.string().min(2),
         phone: z.string().min(6),
         password: z.string().min(8),
-        categoryIds: z.array(z.string().uuid()),
+        categoryId: z.string().uuid(),
+        permissions: z.object({ codes: z.boolean(), catalog: z.boolean(), videos: z.boolean(), users: z.boolean() }),
       })
       .parse(data),
   )
   .handler(async ({ context, data }) => {
-    await assertAdmin(context.supabase as never, context.userId);
+    await assertSuperAdmin(context.supabase);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: created, error } = await supabaseAdmin.auth.admin.createUser({
       email: phoneToEmail(data.phone),
@@ -74,66 +113,21 @@ export const addAdmin = createServerFn({ method: "POST" })
       await supabaseAdmin.auth.admin.deleteUser(created.user.id);
       throw new Error(roleError.message);
     }
-    const { error: assignmentError } = await supabaseAdmin.from("admin_category_assignments").insert(
-      data.categoryIds.map((categoryId) => ({ admin_id: created.user.id, category_id: categoryId })),
-    );
-    if (assignmentError) {
+    try {
+      await readRpc(context.supabase, "save_admin_scope", {
+        _user_id: created.user.id,
+        _category_id: data.categoryId,
+        _can_codes: data.permissions.codes,
+        _can_catalog: data.permissions.catalog,
+        _can_videos: data.permissions.videos,
+        _can_users: data.permissions.users,
+      });
+    } catch (error) {
       await supabaseAdmin.from("user_roles").delete().eq("user_id", created.user.id);
       await supabaseAdmin.from("profiles").delete().eq("id", created.user.id);
       await supabaseAdmin.auth.admin.deleteUser(created.user.id);
-      throw new Error(assignmentError.message);
+      throw error;
     }
-    return { ok: true };
-  });
-
-export const updateAdminCategories = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((data) =>
-    z.object({ userId: z.string().uuid(), categoryIds: z.array(z.string().uuid()) }).parse(data),
-  )
-  .handler(async ({ context, data }) => {
-    await assertAdmin(context.supabase as never, context.userId);
-    if (data.userId === context.userId) throw new Error("cannot_change_self");
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: role } = await supabaseAdmin
-      .from("user_roles")
-      .select("user_id")
-      .eq("user_id", data.userId)
-      .eq("role", "admin")
-      .maybeSingle();
-    if (!role) throw new Error("admin_not_found");
-    const { error: deleteError } = await supabaseAdmin
-      .from("admin_category_assignments")
-      .delete()
-      .eq("admin_id", data.userId);
-    if (deleteError) throw new Error(deleteError.message);
-    if (data.categoryIds.length > 0) {
-      const { error: insertError } = await supabaseAdmin.from("admin_category_assignments").insert(
-        data.categoryIds.map((categoryId) => ({ admin_id: data.userId, category_id: categoryId })),
-      );
-      if (insertError) throw new Error(insertError.message);
-    }
-    return { ok: true };
-  });
-
-export const removeAdminAccess = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((data) => z.object({ userId: z.string().uuid() }).parse(data))
-  .handler(async ({ context, data }) => {
-    await assertAdmin(context.supabase as never, context.userId);
-    if (data.userId === context.userId) throw new Error("cannot_delete_self");
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { error: assignmentError } = await supabaseAdmin
-      .from("admin_category_assignments")
-      .delete()
-      .eq("admin_id", data.userId);
-    if (assignmentError) throw new Error(assignmentError.message);
-    const { error } = await supabaseAdmin
-      .from("user_roles")
-      .delete()
-      .eq("user_id", data.userId)
-      .eq("role", "admin");
-    if (error) throw new Error(error.message);
     return { ok: true };
   });
 
@@ -145,31 +139,58 @@ export const updateAdminCredentials = createServerFn({ method: "POST" })
         userId: z.string().uuid(),
         phone: z.string().min(6).optional(),
         password: z.string().min(8).optional(),
+        categoryId: z.string().uuid().optional(),
+        permissions: z.object({ codes: z.boolean(), catalog: z.boolean(), videos: z.boolean(), users: z.boolean() }).optional(),
       })
       .parse(data),
   )
   .handler(async ({ context, data }) => {
-    await assertAdmin(context.supabase as never, context.userId);
+    await assertSuperAdmin(context.supabase);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const payload: { email?: string; password?: string } = {};
     if (data.phone) payload.email = phoneToEmail(data.phone);
     if (data.password) payload.password = data.password;
-    if (Object.keys(payload).length === 0) return { ok: true };
-    const { error } = await supabaseAdmin.auth.admin.updateUserById(data.userId, payload);
-    if (error) throw new Error(error.message);
-    const profilePatch: { phone?: string } = {};
-    if (data.phone) profilePatch.phone = data.phone;
-    if (Object.keys(profilePatch).length > 0) {
-      const { error: profileError } = await supabaseAdmin.from("profiles").update(profilePatch).eq("id", data.userId);
-      if (profileError) throw new Error(profileError.message);
+    if (Object.keys(payload).length > 0) {
+      const { error } = await supabaseAdmin.auth.admin.updateUserById(data.userId, payload);
+      if (error) throw new Error(error.message);
+      const profilePatch: { phone?: string } = {};
+      if (data.phone) profilePatch.phone = data.phone;
+      if (Object.keys(profilePatch).length > 0) {
+        const { error: profileError } = await supabaseAdmin.from("profiles").update(profilePatch).eq("id", data.userId);
+        if (profileError) throw new Error(profileError.message);
+      }
     }
+    if (data.categoryId && data.permissions) {
+      await readRpc(context.supabase, "save_admin_scope", {
+        _user_id: data.userId,
+        _category_id: data.categoryId,
+        _can_codes: data.permissions.codes,
+        _can_catalog: data.permissions.catalog,
+        _can_videos: data.permissions.videos,
+        _can_users: data.permissions.users,
+      });
+    }
+    return { ok: true };
+  });
+
+export const removeAdminAccess = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) => z.object({ userId: z.string().uuid() }).parse(data))
+  .handler(async ({ context, data }) => {
+    await assertSuperAdmin(context.supabase);
+    if (data.userId === context.userId) throw new Error("cannot_remove_self");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin.from("user_roles").delete().match({ user_id: data.userId, role: "admin" });
+    if (error) throw new Error(error.message);
+    await supabaseAdmin.from("admin_scopes").delete().eq("user_id", data.userId);
     return { ok: true };
   });
 
 export const listPlatformUsers = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    await assertAdmin(context.supabase as never, context.userId);
+    const access = (await getAdminAccess({})) as AdminAccess;
+    if (!access.isSuperAdmin && !access.permissions.users) return [];
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const [{ data: profiles }, { data: roles }, { data: subs }, { data: enrolls }, { data: cats }, { data: courses }] =
       await Promise.all([
@@ -183,19 +204,29 @@ export const listPlatformUsers = createServerFn({ method: "GET" })
     const catName = new Map((cats ?? []).map((c) => [c.id, c.name_ar]));
     const courseName = new Map((courses ?? []).map((c) => [c.id, c.title_ar]));
     const adminIds = new Set((roles ?? []).filter((r) => r.role === "admin").map((r) => r.user_id));
-    return (profiles ?? []).map((p) => ({
+    const visibleUserIds = access.isSuperAdmin
+      ? new Set((profiles ?? []).map((p) => p.id))
+      : new Set([
+          ...(subs ?? []).filter((s) => access.categoryIds.includes(s.category_id)).map((s) => s.user_id),
+          ...(enrolls ?? [])
+            .filter((e) => access.categoryIds.includes((courses ?? []).find((c) => c.id === e.course_id)?.category_id ?? ""))
+            .map((e) => e.user_id),
+        ]);
+    return (profiles ?? []).filter((p) => visibleUserIds.has(p.id) && (access.isSuperAdmin || !adminIds.has(p.id))).map((p) => ({
       id: p.id,
       fullName: p.full_name ?? "",
-      phone: p.phone ?? "",
-      guardianPhone: p.guardian_phone ?? "",
+      phone: access.isSuperAdmin ? p.phone ?? "" : "",
+      guardianPhone: access.isSuperAdmin ? p.guardian_phone ?? "" : "",
       isAdmin: adminIds.has(p.id),
       createdAt: p.created_at,
       categories: (subs ?? [])
         .filter((s) => s.user_id === p.id)
+        .filter((s) => access.isSuperAdmin || access.categoryIds.includes(s.category_id))
         .map((s) => catName.get(s.category_id) ?? "")
         .filter(Boolean),
       courses: (enrolls ?? [])
         .filter((e) => e.user_id === p.id)
+        .filter((e) => access.isSuperAdmin || access.categoryIds.includes((courses ?? []).find((c) => c.id === e.course_id)?.category_id ?? ""))
         .map((e) => courseName.get(e.course_id) ?? "")
         .filter(Boolean),
     }));
@@ -205,7 +236,8 @@ export const getPlatformUserDetail = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data) => z.object({ userId: z.string().uuid() }).parse(data))
   .handler(async ({ context, data }) => {
-    await assertAdmin(context.supabase as never, context.userId);
+    const access = (await getAdminAccess({})) as AdminAccess;
+    if (!access.isSuperAdmin && !access.permissions.users) throw new Error("forbidden");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const uid = data.userId;
     const [
@@ -240,14 +272,25 @@ export const getPlatformUserDetail = createServerFn({ method: "POST" })
     const doneIds = new Set((progress ?? []).map((p) => p.lesson_id));
     const enrolledCourseIds = (enrolls ?? []).map((e) => e.course_id);
 
+    const targetIsAdmin = access.isSuperAdmin
+      ? false
+      : (await supabaseAdmin.from("user_roles").select("user_id").eq("user_id", uid).eq("role", "admin")).data?.length;
+    if (targetIsAdmin) throw new Error("forbidden");
+    const visibleCourses = access.isSuperAdmin
+      ? enrolledCourseIds
+      : enrolledCourseIds.filter((courseId) => access.categoryIds.includes(courseById.get(courseId)?.category_id ?? ""));
+
     return {
       id: uid,
       fullName: profile?.full_name ?? "",
-      phone: profile?.phone ?? "",
-      guardianPhone: profile?.guardian_phone ?? "",
+      phone: access.isSuperAdmin ? profile?.phone ?? "" : "",
+      guardianPhone: access.isSuperAdmin ? profile?.guardian_phone ?? "" : "",
       createdAt: profile?.created_at ?? null,
-      categories: (subs ?? []).map((s) => catName.get(s.category_id) ?? "").filter(Boolean),
-      courses: enrolledCourseIds.map((courseId) => {
+      categories: (subs ?? [])
+        .filter((s) => access.isSuperAdmin || access.categoryIds.includes(s.category_id))
+        .map((s) => catName.get(s.category_id) ?? "")
+        .filter(Boolean),
+      courses: visibleCourses.map((courseId) => {
         const course = courseById.get(courseId);
         const courseLessons = (lessons ?? []).filter((l) => l.course_id === courseId);
         const completed = courseLessons.filter((l) => doneIds.has(l.id)).length;
@@ -276,7 +319,7 @@ export const deletePlatformUser = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data) => z.object({ userId: z.string().uuid() }).parse(data))
   .handler(async ({ context, data }) => {
-    await assertAdmin(context.supabase as never, context.userId);
+    await assertSuperAdmin(context.supabase);
     if (data.userId === context.userId) throw new Error("cannot_delete_self");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     await supabaseAdmin.from("category_subscriptions").delete().eq("user_id", data.userId);

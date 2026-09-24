@@ -1,11 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { Film, KeyRound, Layers, LogOut, ShieldCheck, Users } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
+import { getAdminAccess, type AdminAccess } from "@/lib/admin.functions";
 import { AdminLessons } from "@/components/admin/AdminLessons";
 import { AdminCatalog } from "@/components/admin/AdminCatalog";
 import { AdminCodes } from "@/components/admin/AdminCodes";
@@ -30,6 +32,12 @@ export const Route = createFileRoute("/admin")({
 function AdminPage() {
   const { t, lang } = useI18n();
   const { user, isAdmin, loading, signIn, signOut } = useAuth();
+  const fetchAccess = useServerFn(getAdminAccess);
+  const { data: access, isLoading: accessLoading } = useQuery({
+    queryKey: ["admin-access", user?.id],
+    enabled: Boolean(user && isAdmin),
+    queryFn: () => fetchAccess({}),
+  });
 
   if (loading) {
     return <Shell>{t("loading")}</Shell>;
@@ -51,7 +59,9 @@ function AdminPage() {
     );
   }
 
-  return <AdminDashboard lang={lang} />;
+  if (accessLoading || !access) return <Shell>{t("loading")}</Shell>;
+
+  return <AdminDashboard lang={lang} access={access} />;
 }
 
 function Shell({ children }: { children: React.ReactNode }) {
@@ -124,7 +134,7 @@ const TABS = [
   { id: "admins", label: "tabAdmins", icon: ShieldCheck },
 ] as const;
 
-function AdminDashboard({ lang }: { lang: "ar" | "en" }) {
+function AdminDashboard({ lang, access }: { lang: "ar" | "en"; access: AdminAccess }) {
   const { t } = useI18n();
   const { signOut } = useAuth();
   const [tab, setTab] = useState<(typeof TABS)[number]["id"]>("codes");
@@ -138,6 +148,18 @@ function AdminDashboard({ lang }: { lang: "ar" | "en" }) {
     queryKey: ["admin-courses"],
     queryFn: async () => (await supabase.from("courses").select("*").order("title_ar")).data ?? [],
   });
+
+  const visibleCategories = (categories ?? []).filter((category) => access.isSuperAdmin || access.categoryIds.includes(category.id));
+  const visibleCourses = (courses ?? []).filter((course) => access.isSuperAdmin || access.categoryIds.includes(course.category_id));
+  const visibleTabs = TABS.filter(({ id }) => {
+    if (access.isSuperAdmin) return true;
+    if (id === "codes") return access.permissions.codes;
+    if (id === "catalog") return access.permissions.catalog;
+    if (id === "videos") return access.permissions.videos;
+    if (id === "users") return access.permissions.users;
+    return false;
+  });
+  const activeTab = visibleTabs.some(({ id }) => id === tab) ? tab : visibleTabs[0]?.id;
 
   return (
     <div className="min-h-screen bg-background">
@@ -154,7 +176,7 @@ function AdminDashboard({ lang }: { lang: "ar" | "en" }) {
 
       <main className="mx-auto max-w-6xl space-y-8 px-4 py-10">
         <nav className="flex flex-wrap gap-2 rounded-3xl border border-border bg-card p-2 shadow-soft">
-          {TABS.map(({ id, label, icon: Icon }) => (
+          {visibleTabs.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
               onClick={() => setTab(id)}
@@ -167,16 +189,16 @@ function AdminDashboard({ lang }: { lang: "ar" | "en" }) {
           ))}
         </nav>
 
-        {tab === "codes" && <AdminCodes categories={categories ?? []} courses={courses ?? []} lang={lang} />}
-        {tab === "catalog" && <AdminCatalog lang={lang} />}
-        {tab === "videos" && (
+        {activeTab === "codes" && <AdminCodes categories={visibleCategories} courses={visibleCourses} lang={lang} />}
+        {activeTab === "catalog" && <AdminCatalog lang={lang} categoryIds={access.categoryIds} isSuperAdmin={access.isSuperAdmin} />}
+        {activeTab === "videos" && (
           <div className="space-y-8">
-            <AdminLessons categories={categories ?? []} courses={courses ?? []} lang={lang} />
-            <AdminQuizzes categories={categories ?? []} courses={courses ?? []} lang={lang} />
+            <AdminLessons categories={visibleCategories} courses={visibleCourses} lang={lang} />
+            <AdminQuizzes categories={visibleCategories} courses={visibleCourses} lang={lang} />
           </div>
         )}
-        {tab === "users" && <AdminUsers categories={categories ?? []} courses={courses ?? []} />}
-        {tab === "admins" && <AdminAdmins categories={categories ?? []} />}
+        {activeTab === "users" && <AdminUsers categories={visibleCategories} courses={visibleCourses} isSuperAdmin={access.isSuperAdmin} />}
+        {activeTab === "admins" && <AdminAdmins categories={visibleCategories} lang={lang} />}
       </main>
     </div>
   );

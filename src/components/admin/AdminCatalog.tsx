@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { uploadTeacherImage, useTeacherImageUrl } from "@/lib/teacher-image";
 
 
-export function AdminCatalog({ lang }: { lang: "ar" | "en" }) {
+export function AdminCatalog({ lang, categoryIds, isSuperAdmin }: { lang: "ar" | "en"; categoryIds: string[]; isSuperAdmin: boolean }) {
   const { t } = useI18n();
   const queryClient = useQueryClient();
   const [busy, setBusy] = useState(false);
@@ -37,6 +37,8 @@ export function AdminCatalog({ lang }: { lang: "ar" | "en" }) {
     queryFn: async () =>
       (await supabase.from("courses").select("*").eq("category_id", categoryId).order("title_ar")).data ?? [],
   });
+
+  const visibleCategories = (categories ?? []).filter((category) => isSuperAdmin || categoryIds.includes(category.id));
 
   const run = async (fn: () => Promise<void>, keys: string[][]) => {
     setBusy(true);
@@ -151,7 +153,7 @@ export function AdminCatalog({ lang }: { lang: "ar" | "en" }) {
 
         <div className="mt-6 space-y-2">
           {(categories ?? []).length === 0 && <p className="text-sm text-muted-foreground">{t("noItems")}</p>}
-          {(categories ?? []).map((c) => (
+          {visibleCategories.map((c) => (
             <div key={c.id} className="flex items-center gap-3 rounded-2xl border border-border bg-background p-4">
               <span className="flex-1 text-sm font-bold">{lang === "ar" ? c.name_ar : c.name_en}</span>
               <span className="text-xs text-muted-foreground" dir="ltr">
@@ -177,7 +179,7 @@ export function AdminCatalog({ lang }: { lang: "ar" | "en" }) {
         <div className="mt-5 grid gap-3 sm:grid-cols-2">
           <select value={categoryId} onChange={(e) => setCategoryId(e.target.value)} className={`${field} sm:col-span-2`}>
             <option value="">{t("selectCategory")}</option>
-            {(categories ?? []).map((c) => (
+            {visibleCategories.map((c) => (
               <option key={c.id} value={c.id}>
                 {lang === "ar" ? c.name_ar : c.name_en}
               </option>
