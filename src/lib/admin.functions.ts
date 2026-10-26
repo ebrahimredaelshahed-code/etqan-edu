@@ -77,7 +77,7 @@ export const listAdmins = createServerFn({ method: "GET" })
 
 export const addAdmin = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data) =>
+  .validator((data) =>
     z
       .object({
         fullName: z.string().min(2),
@@ -133,7 +133,7 @@ export const addAdmin = createServerFn({ method: "POST" })
 
 export const updateAdminCredentials = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data) =>
+  .validator((data) =>
     z
       .object({
         userId: z.string().uuid(),
@@ -175,7 +175,7 @@ export const updateAdminCredentials = createServerFn({ method: "POST" })
 
 export const removeAdminAccess = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data) => z.object({ userId: z.string().uuid() }).parse(data))
+  .validator((data) => z.object({ userId: z.string().uuid() }).parse(data))
   .handler(async ({ context, data }) => {
     await assertSuperAdmin(context.supabase);
     if (data.userId === context.userId) throw new Error("cannot_remove_self");
@@ -234,7 +234,7 @@ export const listPlatformUsers = createServerFn({ method: "GET" })
 
 export const getPlatformUserDetail = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data) => z.object({ userId: z.string().uuid() }).parse(data))
+  .validator((data) => z.object({ userId: z.string().uuid() }).parse(data))
   .handler(async ({ context, data }) => {
     const access = (await getAdminAccess({})) as AdminAccess;
     if (!access.isSuperAdmin && !access.permissions.users) throw new Error("forbidden");
@@ -317,7 +317,7 @@ export const getPlatformUserDetail = createServerFn({ method: "POST" })
 
 export const deletePlatformUser = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data) => z.object({ userId: z.string().uuid() }).parse(data))
+  .validator((data) => z.object({ userId: z.string().uuid() }).parse(data))
   .handler(async ({ context, data }) => {
     await assertSuperAdmin(context.supabase);
     if (data.userId === context.userId) throw new Error("cannot_delete_self");

@@ -4,7 +4,7 @@ import { z } from "zod";
 const phoneToEmail = (phone: string) => `u${phone.replace(/\D/g, "")}@etqan-academy.app`;
 
 export const registerUser = createServerFn({ method: "POST" })
-  .inputValidator((data) =>
+  .validator((data) =>
     z
       .object({
         fullName: z.string().trim().min(2),
