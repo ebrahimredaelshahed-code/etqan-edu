@@ -1,4 +1,12 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 
 export type Lang = "ar" | "en";
 
@@ -80,7 +88,7 @@ const dict = {
     notAdmin: "هذا الحساب لا يملك صلاحيات الإدارة",
     noCourses: "لم تشترك في أي دورة بعد",
     changePassword: "تغيير كلمة المرور",
-    
+
     confirmPassword: "تأكيد كلمة المرور",
     passwordMismatch: "كلمتا المرور غير متطابقتين",
     passwordUpdated: "تم تحديث كلمة المرور بنجاح",
@@ -130,11 +138,18 @@ const dict = {
     addCourse: "إضافة باكيدج",
     courseTitleAr: "اسم الباكيدج (عربي)",
     courseTitleEn: "اسم الباكيدج (إنجليزي)",
+    courseDescriptionAr: "وصف الباكيدج (عربي)",
+    courseDescriptionEn: "وصف الباكيدج (إنجليزي)",
     coursePrice: "سعر الباكيدج",
     courseDuration: "مدة الباكيدج بالساعات",
     courseInstructor: "محاضر الباكيدج",
     courseImage: "رابط صورة الباكيدج",
     category: "المادة",
+    categoryDescriptionAr: "وصف المادة (عربي)",
+    categoryDescriptionEn: "وصف المادة (إنجليزي)",
+    categoryIcon: "رمز المادة",
+    sortOrder: "ترتيب الظهور",
+    lessonPosition: "ترتيب الدرس",
     selectCategory: "اختر المادة",
     selectCategoryFirst: "اختر المادة أولاً",
     savedOk: "تم الحفظ بنجاح",
@@ -172,6 +187,14 @@ const dict = {
     passwordNotStored: "غير متاحة، يرجى تغييرها لتظهر هنا",
     deleteCode: "حذف الكود",
     courseImageUpload: "استيراد صورة الباكيدج",
+    editCategory: "تعديل المادة",
+    editCourse: "تعديل الباكيدج",
+    editLesson: "تعديل الدرس",
+    saveChanges: "حفظ التعديلات",
+    cancel: "إلغاء",
+    invalidVideoUrl: "أدخل رابط فيديو صالحاً أو رابط يوتيوب صحيحاً",
+    videoSource: "رابط الفيديو (يوتيوب أو رابط مباشر)",
+    invalidSlug: "أدخل معرفاً بحروف إنجليزية أو أرقام أو شرطات",
     leadTitle: "نقودك للتميز",
     leadSubtitle: "نخبة من المعلمين المتخصصين في مكانٍ واحد",
     statTeachers: "معلم متخصص",
@@ -214,8 +237,6 @@ const dict = {
     noAttempts: "لا توجد محاولات",
     selectQuizFirst: "اختر اختبارًا أولاً",
     lang: "English",
-
-
   },
   en: {
     brand: "Etqan Academy",
@@ -342,11 +363,18 @@ const dict = {
     addCourse: "Add package",
     courseTitleAr: "Package title (Arabic)",
     courseTitleEn: "Package title (English)",
+    courseDescriptionAr: "Package description (Arabic)",
+    courseDescriptionEn: "Package description (English)",
     coursePrice: "Package price",
     courseDuration: "Package duration in hours",
     courseInstructor: "Package instructor",
     courseImage: "Package image URL",
     category: "Subject",
+    categoryDescriptionAr: "Subject description (Arabic)",
+    categoryDescriptionEn: "Subject description (English)",
+    categoryIcon: "Subject icon",
+    sortOrder: "Display order",
+    lessonPosition: "Lesson order",
     selectCategory: "Select subject",
     selectCategoryFirst: "Select a subject first",
     savedOk: "Saved successfully",
@@ -384,6 +412,14 @@ const dict = {
     passwordNotStored: "Not available, change it to show here",
     deleteCode: "Delete code",
     courseImageUpload: "Upload package image",
+    editCategory: "Edit subject",
+    editCourse: "Edit package",
+    editLesson: "Edit lesson",
+    saveChanges: "Save changes",
+    cancel: "Cancel",
+    invalidVideoUrl: "Enter a valid video URL or YouTube link",
+    videoSource: "Video URL (YouTube or direct link)",
+    invalidSlug: "Enter a slug using English letters, numbers, or hyphens",
     leadTitle: "We lead you to excellence",
     leadSubtitle: "A selection of specialist teachers in one place",
     statTeachers: "Specialist teachers",
@@ -426,8 +462,6 @@ const dict = {
     noAttempts: "No attempts",
     selectQuizFirst: "Select a quiz first",
     lang: "العربية",
-
-
   },
 } as const;
 
@@ -453,7 +487,6 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const setLang = useCallback((_next: Lang) => {}, []);
-
 
   const value = useMemo<I18nValue>(
     () => ({
