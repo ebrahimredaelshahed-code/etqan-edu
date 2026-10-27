@@ -1,0 +1,142 @@
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { ArrowLeft, BookOpen, GraduationCap, User } from "lucide-react";
+import { SiteLayout } from "@/components/site/SiteLayout";
+import { useI18n } from "@/lib/i18n";
+import { useAuth } from "@/lib/auth";
+import { supabase } from "@/integrations/supabase/client";
+import { TeacherPhoto } from "@/components/site/TeacherPhoto";
+
+
+export const Route = createFileRoute("/categories/")({
+  head: () => ({
+    meta: [
+      { title: "إختار معلمك | Etqan Academy" },
+      {
+        name: "description",
+        content: "تصفح المواد الدراسية ومعلميها على منصة إتقان واشترك في المادة التي تناسبك.",
+      },
+      { property: "og:title", content: "إختار معلمك | Etqan Academy" },
+      { property: "og:description", content: "اختر مادتك ومعلمك وابدأ رحلتك التعليمية على منصة إتقان." },
+    ],
+  }),
+  component: CategoriesPage,
+});
+
+function CategoriesPage() {
+  const { t, lang } = useI18n();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["categories"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("categories").select("*").order("sort_order");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: subscribed } = useQuery({
+    queryKey: ["my-category-subscriptions", user?.id],
+    enabled: Boolean(user),
+    queryFn: async () => {
+      const { data } = await supabase.from("category_subscriptions").select("category_id");
+      return (data ?? []).map((row) => row.category_id);
+    },
+  });
+
+  const goToCourses = (slug: string) => navigate({ to: "/categories/$slug", params: { slug } });
+
+  const subscribe = async (categoryId: string, slug: string) => {
+    if (!user) {
+      toast.error(t("mustLogin"));
+      navigate({ to: "/auth", search: { mode: "login" } });
+      return;
+    }
+    const { error } = await supabase
+      .from("category_subscriptions")
+      .insert({ user_id: user.id, category_id: categoryId });
+    if (error && !error.message.includes("duplicate")) {
+      toast.error(error.message);
+      return;
+    }
+    await queryClient.invalidateQueries({ queryKey: ["my-category-subscriptions"] });
+    toast.success(t("subscribedOk"));
+    goToCourses(slug);
+  };
+
+  return (
+    <SiteLayout>
+      <div className="mx-auto max-w-6xl px-4 py-16">
+        <h1 className="text-4xl font-extrabold">{t("browseCategories")}</h1>
+
+        {isLoading ? (
+          <p className="mt-10 text-muted-foreground">{t("loading")}</p>
+        ) : (
+          <div className="mt-10 grid gap-7 md:grid-cols-2">
+            {data?.map((c) => {
+              const slug = c.slug?.trim() ? c.slug : c.id;
+              const isSubscribed = subscribed?.includes(c.id);
+              const name = lang === "ar" ? c.name_ar : c.name_en;
+              const specialty = lang === "ar" ? c.description_ar : c.description_en;
+              return (
+                <article
+                  key={c.id}
+                  className="relative flex min-h-[200px] overflow-hidden rounded-[1.25rem] border border-border bg-card shadow-soft transition-all hover:-translate-y-1 hover:shadow-lift"
+                >
+                  <div className="relative z-10 flex w-[58%] flex-col justify-between p-4">
+                    <div>
+                      <div className="flex items-center gap-2.5">
+                        <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-hero-gradient text-ink-foreground">
+                          <BookOpen className="size-4.5" />
+                        </span>
+                        <h2 className="text-lg font-extrabold leading-tight">{name}</h2>
+                      </div>
+                      {c.teacher_name && (
+                        <p className="mt-2 flex items-center gap-1.5 text-sm font-extrabold text-foreground">
+                          <User className="size-3.5 text-muted-foreground" />
+                          {c.teacher_name}
+                        </p>
+                      )}
+                      {specialty && (
+                        <span className="mt-2 inline-flex items-center gap-1.5 rounded-xl bg-secondary px-2.5 py-1 text-[11px] font-bold text-primary">
+                          <GraduationCap className="size-3 shrink-0" />
+                          {specialty}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="mt-3 border-t border-border pt-2.5">
+                      <button
+                        onClick={() => (isSubscribed ? goToCourses(slug) : subscribe(c.id, slug))}
+                        className="inline-flex items-center gap-1.5 rounded-2xl bg-hero-gradient px-4 py-2 text-[11px] font-extrabold text-ink-foreground shadow-soft"
+                      >
+                        {isSubscribed ? t("enterSubject") : t("subscribeNow")}
+                        <ArrowLeft className="size-3 rtl:rotate-0 ltr:rotate-180" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div
+                    className="absolute inset-y-0 left-0 w-[44%] overflow-hidden bg-hero-gradient"
+                    style={{ borderTopRightRadius: "60% 100%", borderBottomRightRadius: "60% 100%" }}
+                  >
+                    <TeacherPhoto
+                      value={c.teacher_image_url}
+                      alt={c.teacher_name || name}
+                      className="absolute inset-0 size-full object-cover object-top"
+                    />
+
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </SiteLayout>
+  );
+}
