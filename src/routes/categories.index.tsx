@@ -85,35 +85,37 @@ function CategoriesPage() {
               return (
                 <article
                   key={c.id}
-                  className="relative flex min-h-[230px] overflow-hidden rounded-[1.5rem] border border-border bg-card shadow-soft transition-all hover:-translate-y-1 hover:shadow-lift"
+                  className="relative flex min-h-[200px] overflow-hidden rounded-[1.25rem] border border-border bg-card shadow-soft transition-all hover:-translate-y-1 hover:shadow-lift"
                 >
-                  <div className="relative z-10 flex w-[58%] flex-col justify-between p-5">
+                  <div className="relative z-10 flex w-[58%] flex-col justify-between p-4">
                     <div>
-                      <span className="flex size-10 items-center justify-center rounded-full bg-hero-gradient text-ink-foreground">
-                        <BookOpen className="size-5" />
-                      </span>
-                      <h2 className="mt-3 text-2xl font-extrabold leading-tight">{name}</h2>
+                      <div className="flex items-center gap-2.5">
+                        <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-hero-gradient text-ink-foreground">
+                          <BookOpen className="size-4.5" />
+                        </span>
+                        <h2 className="text-lg font-extrabold leading-tight">{name}</h2>
+                      </div>
                       {c.teacher_name && (
-                        <p className="mt-2 flex items-center gap-2 text-base font-extrabold text-foreground">
-                          <User className="size-4 text-muted-foreground" />
+                        <p className="mt-2 flex items-center gap-1.5 text-sm font-extrabold text-foreground">
+                          <User className="size-3.5 text-muted-foreground" />
                           {c.teacher_name}
                         </p>
                       )}
                       {specialty && (
-                        <span className="mt-2 inline-flex items-center gap-2 rounded-xl bg-secondary px-3 py-1.5 text-xs font-bold text-primary">
-                          <GraduationCap className="size-3.5" />
+                        <span className="mt-2 inline-flex items-center gap-1.5 rounded-xl bg-secondary px-2.5 py-1 text-[11px] font-bold text-primary">
+                          <GraduationCap className="size-3 shrink-0" />
                           {specialty}
                         </span>
                       )}
                     </div>
 
-                    <div className="mt-4 border-t border-border pt-3">
+                    <div className="mt-3 border-t border-border pt-2.5">
                       <button
                         onClick={() => (isSubscribed ? goToCourses(slug) : subscribe(c.id, slug))}
-                        className="inline-flex items-center gap-2 rounded-2xl bg-hero-gradient px-5 py-2.5 text-xs font-extrabold text-ink-foreground shadow-soft"
+                        className="inline-flex items-center gap-1.5 rounded-2xl bg-hero-gradient px-4 py-2 text-[11px] font-extrabold text-ink-foreground shadow-soft"
                       >
                         {isSubscribed ? t("enterSubject") : t("subscribeNow")}
-                        <ArrowLeft className="size-3.5 rtl:rotate-0 ltr:rotate-180" />
+                        <ArrowLeft className="size-3 rtl:rotate-0 ltr:rotate-180" />
                       </button>
                     </div>
                   </div>
