@@ -85,41 +85,41 @@ function CategoriesPage() {
               return (
                 <article
                   key={c.id}
-                  className="relative flex min-h-[280px] overflow-hidden rounded-[2rem] border border-border bg-card shadow-soft transition-all hover:-translate-y-1 hover:shadow-lift"
+                  className="relative flex min-h-[230px] overflow-hidden rounded-[1.5rem] border border-border bg-card shadow-soft transition-all hover:-translate-y-1 hover:shadow-lift"
                 >
-                  <div className="relative z-10 flex w-[58%] flex-col justify-between p-7">
+                  <div className="relative z-10 flex w-[58%] flex-col justify-between p-5">
                     <div>
-                      <span className="flex size-12 items-center justify-center rounded-full bg-hero-gradient text-ink-foreground">
-                        <BookOpen className="size-6" />
+                      <span className="flex size-10 items-center justify-center rounded-full bg-hero-gradient text-ink-foreground">
+                        <BookOpen className="size-5" />
                       </span>
-                      <h2 className="mt-5 text-3xl font-extrabold leading-tight">{name}</h2>
+                      <h2 className="mt-3 text-2xl font-extrabold leading-tight">{name}</h2>
                       {c.teacher_name && (
-                        <p className="mt-4 flex items-center gap-2 text-lg font-extrabold text-foreground">
-                          <User className="size-5 text-muted-foreground" />
+                        <p className="mt-2 flex items-center gap-2 text-base font-extrabold text-foreground">
+                          <User className="size-4 text-muted-foreground" />
                           {c.teacher_name}
                         </p>
                       )}
                       {specialty && (
-                        <span className="mt-3 inline-flex items-center gap-2 rounded-xl bg-secondary px-4 py-2 text-sm font-bold text-primary">
-                          <GraduationCap className="size-4" />
+                        <span className="mt-2 inline-flex items-center gap-2 rounded-xl bg-secondary px-3 py-1.5 text-xs font-bold text-primary">
+                          <GraduationCap className="size-3.5" />
                           {specialty}
                         </span>
                       )}
                     </div>
 
-                    <div className="mt-6 border-t border-border pt-5">
+                    <div className="mt-4 border-t border-border pt-3">
                       <button
                         onClick={() => (isSubscribed ? goToCourses(slug) : subscribe(c.id, slug))}
-                        className="inline-flex items-center gap-3 rounded-2xl bg-hero-gradient px-7 py-3.5 text-sm font-extrabold text-ink-foreground shadow-soft"
+                        className="inline-flex items-center gap-2 rounded-2xl bg-hero-gradient px-5 py-2.5 text-xs font-extrabold text-ink-foreground shadow-soft"
                       >
                         {isSubscribed ? t("enterSubject") : t("subscribeNow")}
-                        <ArrowLeft className="size-4 rtl:rotate-0 ltr:rotate-180" />
+                        <ArrowLeft className="size-3.5 rtl:rotate-0 ltr:rotate-180" />
                       </button>
                     </div>
                   </div>
 
                   <div
-                    className="absolute inset-y-0 left-0 w-[48%] overflow-hidden bg-hero-gradient"
+                    className="absolute inset-y-0 left-0 w-[44%] overflow-hidden bg-hero-gradient"
                     style={{ borderTopRightRadius: "60% 100%", borderBottomRightRadius: "60% 100%" }}
                   >
                     <TeacherPhoto
